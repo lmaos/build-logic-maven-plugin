@@ -56,7 +56,11 @@ public class VariableFactory {
 
         if (XUtils.isEmpty(type)){
             if (XUtils.isNumber(value)){
-                return NumberVariable.of(value);
+                if (value.indexOf(".") != -1){
+                    return NumberVariable.of(value);
+                } else {
+                    return IntVariable.of(value);
+                }
             } else {
                 return StringVariable.of(value);
             }

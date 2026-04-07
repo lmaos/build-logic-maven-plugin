@@ -59,8 +59,13 @@
 
 用于定义一个变量。 所有变量的名字只可以包含字母、数字和下划线。
 ```xml
+<!-- 自动变量类型, 通用定义 -->
 <var name="a" value="10" />
 <echo>a=${a}</echo>
+
+<!-- 强制指定变量类型 -->
+<var.int name="a" value="10" />
+<var.string name="a" value="10" />
 ```
 
 引用一个变量 
