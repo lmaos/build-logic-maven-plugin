@@ -21,6 +21,12 @@
 
                         <str.random name="randomStr" params="10,10,','" value="12,34,56,78,90" />
                         <echo>${randomStr}</echo>
+
+
+                        <str name="str">hello world</str>
+                        <echo>${str.length()}</echo> <!-- 输出：11 -->
+                        <echo>${str.toUpperCase()}</echo> <!-- 输出：HELLO WORLD -->
+                        <echo>${str.substring(int 0, int 5)}</echo> <!-- 输出：HELLO -->
                     </main>
                 </configuration>
             </plugin>

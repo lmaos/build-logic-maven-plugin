@@ -44,7 +44,44 @@
 
 ```
 
+## 扩展 ${} 表达式
+
+ 变量：逻辑创建的变量。
+
+ 类型：Java数据类型，基本和部分数据类型支持简写。
+
+ 方法：Java对象的方法。 
+ 
+ 值和引用变量名： 部分值可以直接传入，特殊对象值需要使用引用。
+
+ 
+```xml
+<echo>${变量名.方法(类型 值或变量名)}</echo>
+```
+
+例如:
+
+```xml
+<str name="str">hello world</str>
+<echo>${str}</echo>   <!-- 输出：hello world -->
+<echo>${str.length()}</echo> <!-- 输出：11 -->
+<echo>${str.toUpperCase()}</echo> <!-- 输出：HELLO WORLD -->
+<echo>${str.substring(int 0, int 5)}</echo> <!-- 输出：HELLO -->
+```
+
+
 ## 标签说明
+
+### 通用属性 < XxxTag test="true/false" >
+属性test: 所有标签都可以使用， 来判断是否可以执行某个操作。test 接受简单判断逻辑表达式或布尔值。
+
+```xml
+<echo test="a == 10" value="a等于10" />
+<echo test="a > 10" value="a大于10" />
+<echo test="varName" value="varName的值存在" />
+
+```
+...
 
 ### < main >
 
@@ -74,6 +111,13 @@
 <echo>b=${b}</echo>
 ```
 
+### < mkdir />
+创建目录
+```xml
+<mkdir name="testDir" path="${project.basedir}/test" />
+```
+
+
 ### < file />
 文件变量定义
 ```xml
@@ -91,11 +135,6 @@
 
 属性test: 所有标签都可以使用， 来判断是否可以执行某个操作。test 接受简单判断逻辑表达式或布尔值。
 
-### < mkdir />
-创建目录
-```xml
-<mkdir name="testDir" path="${project.basedir}/test" />
-```
 
 
 #### < read />
@@ -148,7 +187,7 @@
 <write file="testTxtFileWrite" ref="testTxtFileRead" overwrite="true" />
 ```
 
-#### <delete />
+#### < delete >
 删除文件或目录, 默认：只能删除 项目目录下的文件或目录， 不能删除其他目录下的文件或目录。
 
 ```xml
@@ -542,3 +581,6 @@ name: 设置指定变量的字符串值。
 </response>
 </http>
 ```
+
+---
+
