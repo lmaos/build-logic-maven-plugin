@@ -78,7 +78,7 @@ public class HttpAction extends VariableAction {
         if (contentAction != null) {
             contentAction.execute(actionParam, parentAction);
         }
-        String url = XUtils.toUrlString(this.url, encoding);
+        String url = XUtils.toUrlString(actionParam.format(this.url), encoding);
         HttpURLConnection conn = null;
         try {
             // 1. 创建URL对象
