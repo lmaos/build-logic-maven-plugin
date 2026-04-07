@@ -1,0 +1,37 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <!-- 添加列表项, 不存在变量则创建 -->
+                        <list.add name="appList">
+                           <item>item1</item>
+                           <item>item2</item>
+                        </list.add>
+                        <list.add name="appList">
+                            <item>item3</item>
+                            <item>item4</item>
+                        </list.add>
+                        <echo>appList: ${appList}</echo>
+                        <foreach collection="appList">
+                            <echo>${item}</echo>
+                        </foreach>
+
+                        <list name="fileList">
+                            <file path="${project.basedir}/test.txt" />
+                        </list>
+                        <echo>fileList: ${fileList}</echo>
+                        <foreach collection="fileList" item="item">
+                            <echo>file: ${item}</echo>
+                        </foreach>
+
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

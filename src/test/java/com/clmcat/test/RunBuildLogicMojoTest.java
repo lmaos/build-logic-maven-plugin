@@ -1,0 +1,52 @@
+package com.clmcat.test;
+
+import com.clmcat.maven.plugins.HelloMojo;
+import com.clmcat.maven.plugins.RunBuildLogicMojo;
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
+import javax.inject.Inject;
+
+@MojoTest
+public class RunBuildLogicMojoTest  {
+
+
+    @Inject
+            @Mock
+    MavenProject project;
+
+    @Test
+    @Basedir("src/test/resources/plugin-test-hello")
+    @InjectMojo(goal = "hello", pom = "plugin-test-hello-pom.xml")
+    public void testHelloMojoExecute(HelloMojo mojo) throws Exception {
+        mojo.execute();
+    }
+
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-list-pom.xml")
+    public void testListMojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
+
+
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-return-pom.xml")
+    public void testReturnMojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
+
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-file-pom.xml")
+    public void testFileMojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
+
+}

@@ -1,0 +1,31 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <file name="testTxtFile" path="${project.basedir}/test.txt" />
+                        <echo>${testTxtFile.exists()}</echo>
+                        <echo test="testTxtFile">文件存在</echo>
+                        <echo test="!testTxtFile">文件存在不存在</echo>
+
+                        <read name="testTxtFileRead" file="testTxtFile" />
+                        <echo>testTxtFileRead=${testTxtFileRead}</echo>
+                        <file name="testTxtFileWrite" path="${project.basedir}/test-write.txt" />
+                        <write file="testTxtFileWrite" ref="testTxtFileRead" overwrite="true" />
+
+                        <!-- 便利文件列表, 包含子目录 -->
+                        <echo>便利文件列表，包含子目录</echo>
+                        <file name="testDir" path="${project.basedir}" />
+                        <foreach collection="testDir" item="item">
+                            <echo>file: ${item}</echo>
+                        </foreach>
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

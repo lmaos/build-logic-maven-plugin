@@ -1,0 +1,26 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <var name="abc" >
+                            1231312
+                        </var>
+                        <func.testReturn>
+                            <echo>testReturn</echo>
+                            <return ref="abc" />
+                        </func.testReturn>
+                        <call.testReturn />
+
+                        <echo>${return.testReturn}</echo>
+
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
