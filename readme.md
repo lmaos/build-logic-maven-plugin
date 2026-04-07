@@ -2,6 +2,47 @@
 
 Maven 插件，用于在 Maven 构建过程中执行逻辑。 比如： 创建目录， 压缩文件， 和一些文件操作， 逻辑操作， Http上传等。
 
+比如构建项目发布压缩包示范: 
+```xml
+<!-- 创建用于发布的目录 -->
+<mkdir path="${project.basedir}/publish" />
+<mkdir path="${project.basedir}/publish/scripts" />
+<mkdir path="${project.basedir}/publish/nginx" />
+
+<file name="appJarFile" path="${project.basedir}/target/app.jar" />
+<!-- 复制 app.jar 到 publish 目录下 -->
+<file name="appJarFileWrite" path="${project.basedir}/publish/app.jar" />
+<!-- 读取appJarFile文件内容， 到目标appJarFileWrite文件, overwrite="true" 表示覆盖-->
+<write ref="appJarFile" file="appJarFileWrite"  overwrite="true" />
+<!-- 初始化一个默认启动脚本 -->
+<file name="startShell" file="${project.basedir}/publish/start.sh" />
+<!-- 写入默认启动脚本内容 -->
+<write file="startShell" ><![CDATA[
+#!/bin/sh
+
+APP_NAME=app
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+pkill -f "${APP_NAME}.jar"
+sleep 3
+nohup java "-Xms1g -Xmx1g" -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${APP_NAME}.log" 2>&1 &
+]]></write>
+
+<!-- 压缩目录 -->
+<!-- 创建 zip 文件变量 -->
+<file name="appZipFile" path="${project.basedir}/app.zip"/>
+<!-- 压缩目录到 zip 文件 -->
+<zip file="appZipFile">
+    <entry dir="${project.basedir}/publish"/>
+</zip>
+
+<if test="appZipFile" >
+    <then>app.zip 压缩成功</then>
+    <else>app.zip 压缩失败</else>
+</if>
+
+
+```
+
 ## 插件介绍
 可以使用基本的逻辑表达式，来判断是否执行某个操作。所有逻辑需要卸载 <main></main> 标签中。
 
