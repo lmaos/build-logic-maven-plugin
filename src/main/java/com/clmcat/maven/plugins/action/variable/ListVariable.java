@@ -51,4 +51,8 @@ public class ListVariable<T> extends Variable.AbstractVariable<List<T>> {
     public List<T> getValue() {
         return super.getValue();
     }
+
+    public static <T> ListVariable<T> of(List<T> value) {
+        return new ListVariable<>(value);
+    }
 }

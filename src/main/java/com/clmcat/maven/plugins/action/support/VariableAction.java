@@ -5,8 +5,9 @@ import com.clmcat.maven.plugins.action.ActionParam;
 import com.clmcat.maven.plugins.action.Variable;
 import com.clmcat.maven.plugins.action.XUtils;
 import com.clmcat.maven.plugins.action.variable.BooleanVariable;
-import com.clmcat.maven.plugins.action.variable.NumberVariable;
+import com.clmcat.maven.plugins.action.variable.number.NumberVariable;
 import com.clmcat.maven.plugins.action.variable.StringVariable;
+import com.clmcat.maven.plugins.action.variable.VariableFactory;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import java.math.BigDecimal;
@@ -18,6 +19,8 @@ public class VariableAction extends Action.AbstractAction {
     private String scope;
     private String ref; // 引用其他变量
     private Variable storeVariable;
+    // 是否必须指定name属性
+    private boolean nameRequired = true;
 
     public void setName(String name) {
         this.name = name;
@@ -25,6 +28,10 @@ public class VariableAction extends Action.AbstractAction {
 
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    public void setNameRequired(boolean nameRequired) {
+        this.nameRequired = nameRequired;
     }
 
     public String getName() {
@@ -41,15 +48,20 @@ public class VariableAction extends Action.AbstractAction {
 
     @Override
     protected boolean initExecute(ActionParam actionParam, Action parentAction) throws Exception {
-        if (name == null) {
+        verifyName(actionParam, parentAction);
+        return super.initExecute(actionParam, parentAction);
+    }
+
+    protected void verifyName(ActionParam actionParam, Action parentAction) throws Exception {
+        if (nameRequired && XUtils.isEmpty(name)) {
             throw new IllegalArgumentException("any variable must have name attribute; <" + getTag() + " name=\"name\" />");
         }
         // 严格匹配：只能是 $ 0-9 a-z A-Z，且不能为空
-        if (!name.matches("^[$0-9a-zA-Z_]+$")) {
+        if (name != null && !XUtils.isVariableName(name)) {
             throw new MojoExecutionException("any variable name must only contain $, 0-9, a-z, A-Z,_ (no dots allowed): <" + getTag() + " name=\"" + name + "\" />");
         }
-        return super.initExecute(actionParam, parentAction);
     }
+
 
     @Override
     protected void callExecute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -66,7 +78,10 @@ public class VariableAction extends Action.AbstractAction {
             String value = actionParam.format(getValue());
 
             Variable variable = null;
-            if (value.startsWith("\"") && value.endsWith("\"") || value.startsWith("'") && value.endsWith("'")) {
+
+            if (!XUtils.isEmpty(getTagMethod())) {
+                variable = VariableFactory.newVariable(getTagMethod(), value);
+            } else if (value.startsWith("\"") && value.endsWith("\"") || value.startsWith("'") && value.endsWith("'")) {
                 value = value.substring(1, value.length() - 1);
                 variable = new StringVariable(value);
             } else if (isNumber(value)) {
@@ -83,20 +98,14 @@ public class VariableAction extends Action.AbstractAction {
     }
 
     protected final void setVariable(ActionParam actionParam, Variable variable) {
-        setVariable(actionParam, name, variable);
+        setVariable(actionParam, scope, name, variable);
     }
 
-    protected final void setVariable(ActionParam actionParam, String name, Variable variable) {
-        if ("global".equals(scope)) {
-            actionParam.setVariable(name, variable);
-        } else if ("root".equals(scope)) {
-            getFunctionVariables().setRootVariable(name, variable);
-        } else if ("this".equals(scope)) {
-            getThisFunctionVariable().setVariable(name, variable);
-        } else {
-            getFunctionVariables().setVariable(name, variable);
-        }
-        storeVariable = variable;
+
+    @Override
+    protected final void setVariable(ActionParam actionParam, String scope, String name, Variable variable) {
+        super.setVariable(actionParam, scope, name, variable);
+        this.storeVariable = variable;
     }
 
     public Variable getStoreVariable() {

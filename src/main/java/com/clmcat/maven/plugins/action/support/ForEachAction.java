@@ -5,6 +5,7 @@ import com.clmcat.maven.plugins.action.ActionParam;
 import com.clmcat.maven.plugins.action.CodeBlockAction;
 import com.clmcat.maven.plugins.action.Variable;
 import com.clmcat.maven.plugins.action.variable.*;
+import com.clmcat.maven.plugins.action.variable.number.NumberVariable;
 
 import java.io.File;
 import java.lang.reflect.Array;

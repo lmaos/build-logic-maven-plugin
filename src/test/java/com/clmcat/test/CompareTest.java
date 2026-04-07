@@ -4,7 +4,7 @@ import com.clmcat.maven.plugins.action.compare.Compare;
 import com.clmcat.maven.plugins.action.compare.LogicCompare;
 import com.clmcat.maven.plugins.action.variable.FunctionVariable;
 import com.clmcat.maven.plugins.action.variable.FunctionVariableItem;
-import com.clmcat.maven.plugins.action.variable.NumberVariable;
+import com.clmcat.maven.plugins.action.variable.number.NumberVariable;
 import com.clmcat.maven.plugins.action.variable.StringVariable;
 import org.junit.jupiter.api.Test;
 

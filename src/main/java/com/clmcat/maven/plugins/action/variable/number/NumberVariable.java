@@ -1,4 +1,4 @@
-package com.clmcat.maven.plugins.action.variable;
+package com.clmcat.maven.plugins.action.variable.number;
 
 import com.clmcat.maven.plugins.action.Variable;
 

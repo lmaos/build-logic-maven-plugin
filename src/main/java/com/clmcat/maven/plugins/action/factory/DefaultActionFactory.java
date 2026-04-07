@@ -2,6 +2,7 @@ package com.clmcat.maven.plugins.action.factory;
 
 import com.clmcat.maven.plugins.action.Action;
 import com.clmcat.maven.plugins.action.GroupAction;
+import com.clmcat.maven.plugins.action.anns.NotAttr;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import javax.management.monitor.MonitorSettingException;
@@ -84,6 +85,11 @@ public class DefaultActionFactory implements ActionFactory {
                 for (String attributeName : attributeNames) {
                     try {
                         Field declaredField = findField(attributeName, actionClass);
+                        // 忽略 NotAttr 注解的字段
+                        if (declaredField.isAnnotationPresent(NotAttr.class)) {
+                            continue;
+                        }
+
 
                         int modifiers = declaredField.getModifiers();
                         // 忽略 static 或 final 字段

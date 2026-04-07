@@ -50,4 +50,11 @@ public class MapVariable<K,V> extends Variable.AbstractVariable<Map<K,V>> {
     public Map<K, V> getValue() {
         return super.getValue();
     }
+
+    public static <K,V> MapVariable<K,V> of(Map<K, V> value) {
+        return new MapVariable<>(value);
+    }
+
+
+
 }

@@ -4,7 +4,7 @@ import com.clmcat.maven.plugins.action.Variable;
 import com.clmcat.maven.plugins.action.XUtils;
 import com.clmcat.maven.plugins.action.variable.BytesVariable;
 import com.clmcat.maven.plugins.action.variable.FunctionVariable;
-import com.clmcat.maven.plugins.action.variable.NumberVariable;
+import com.clmcat.maven.plugins.action.variable.number.NumberVariable;
 import com.clmcat.maven.plugins.action.variable.StringVariable;
 
 public class VariableNodeParam implements NodeParam {

@@ -1,8 +1,10 @@
 package com.clmcat.maven.plugins.action.format;
 
 import com.clmcat.maven.plugins.action.Variable;
+import com.clmcat.maven.plugins.action.XUtils;
 import com.clmcat.maven.plugins.action.variable.FunctionVariables;
 import com.clmcat.maven.plugins.action.variable.StringVariable;
+import com.clmcat.maven.plugins.action.variable.VariableFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -118,15 +120,16 @@ public class Format {
                         Object[] paramValues = new Object[paramNames.length];
                         // java.lang.String name
                         for (int i = 0; i < paramNames.length; i++) {
+                            paramNames[i] = paramNames[i].trim();
                             int varIndex = paramNames[i].indexOf(" ");
                             if (varIndex == -1) {
                                 paramValues[i] = null;
                             } else {
                                 String paramClassName = paramNames[i].substring(0, varIndex).trim();
                                 String paramName = paramNames[i].substring(varIndex + 1).trim();
-                                Variable<?> paramVariable = param.getVariable(paramName);
+                                Variable<?> paramVariable = param.getVariable(paramName, VariableFactory.newVariable(paramClassName, XUtils.unquote(paramName)));
                                 paramValues[i] = paramVariable.getValue();
-                                paramTypes[i] = Class.forName(paramClassName);
+                                paramTypes[i] = XUtils.toSimpleClass(paramClassName);
                             }
                         }
                         currValue = findMethod(functionName, currValue.getClass(), paramTypes).invoke(currValue, paramValues);
@@ -138,22 +141,8 @@ public class Format {
             } catch (Exception e) {
                 throw new RuntimeException(" format variable error: " + this.name + ", text: " + text, e);
             }
-
         }
     }
-
-//    public Field findField(String fieldName, Class<?> fieldType) throws NoSuchFieldException {
-//        Class<?> aClass = fieldType;
-//        while (aClass != Object.class) {
-//            try {
-//                Field declaredField = aClass.getDeclaredField(fieldName);
-//                return declaredField;
-//            } catch (NoSuchFieldException e) {
-//                aClass =  aClass.getSuperclass();
-//            }
-//        }
-//        throw new NoSuchFieldException("Field:" + fieldName + " not found");
-//    }
 
     public static Method findMethod(String methodName, Class<?> beanType, Class<?> ... asClass) throws  NoSuchMethodException {
         Class<?> aClass = beanType;

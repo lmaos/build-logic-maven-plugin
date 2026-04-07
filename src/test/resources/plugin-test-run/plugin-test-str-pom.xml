@@ -1,0 +1,29 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <str name="str">hello world</str>
+                        <str.len name="str" to="strLen" />
+                        <echo>strLen=${strLen}</echo>
+
+                        <str.split name="list" value="a,b,c,d,e,f,g" params=","/>
+                        <echo>${list}</echo>
+
+                        <foreach collection="0..2" >
+                            <str.random name="list" params="10" to="randomStr" />
+                            <echo>${randomStr}</echo>
+                        </foreach>
+
+                        <str.random name="randomStr" params="10,10,','" value="12,34,56,78,90" />
+                        <echo>${randomStr}</echo>
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

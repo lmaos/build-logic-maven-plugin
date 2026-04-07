@@ -8,6 +8,7 @@ import com.clmcat.maven.plugins.action.compare.LogicCompare;
 import com.clmcat.maven.plugins.action.execute.DefaultActionExecute;
 import com.clmcat.maven.plugins.action.factory.DefaultActionFactory;
 import com.clmcat.maven.plugins.action.support.*;
+import com.clmcat.maven.plugins.action.support.string.StringAction;
 import com.clmcat.maven.plugins.action.variable.FileVariable;
 import com.clmcat.maven.plugins.action.variable.FunctionVariablesReference;
 import org.apache.maven.plugin.AbstractMojo;
@@ -62,6 +63,9 @@ public class RunBuildLogicMojo extends AbstractMojo {
         actionFactory.addActionType("if", IfAction.class);
         actionFactory.addActionType("foreach", ForEachAction.class);
         actionFactory.addActionType("list", ListAction.class);
+        actionFactory.addActionType("http", HttpAction.class);
+        actionFactory.addActionType("str", StringAction.class);
+
         this.actionExecute = new DefaultActionExecute(actionFactory);
     }
 

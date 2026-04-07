@@ -1,6 +1,7 @@
 package com.clmcat.maven.plugins.action;
 
 import com.clmcat.maven.plugins.action.compare.Compare;
+import com.clmcat.maven.plugins.action.factory.ActionFactory;
 import com.clmcat.maven.plugins.action.format.Format;
 import com.clmcat.maven.plugins.action.variable.FunctionVariable;
 import com.clmcat.maven.plugins.action.variable.FunctionVariableItem;
@@ -30,6 +31,10 @@ public class ActionParam {
 
     public ActionExecute getActionExecute() {
         return actionExecute;
+    }
+
+    public ActionFactory getActionFactory() {
+        return actionExecute.getActionFactory();
     }
 
     public Mojo getMojo() {

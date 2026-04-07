@@ -49,4 +49,16 @@ public class RunBuildLogicMojoTest  {
         mojo.execute();
     }
 
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-http-pom.xml")
+    public void testHttpMojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-str-pom.xml")
+    public void testStringMojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
 }

@@ -134,7 +134,36 @@ public interface Action {
             return getFunctionVariables().getVariable(name);
         }
 
+        public Variable getVariable(String name, Variable defaultValue) {
+            return getFunctionVariables().getVariable(name, defaultValue);
+        }
 
+        public Variable getThisVariable(String name) {
+            return getThisFunctionVariable().getVariable(name);
+        }
+
+        /**
+         * 设置变量
+         * @param actionParam
+         * @param scope 设置变量范围
+         * @param name  变量名，如果不存在，则不会设置。
+         * @param variable 变量值
+         */
+        protected void setVariable(ActionParam actionParam, String scope, String name, Variable variable) {
+            if (XUtils.isEmpty(name)) {
+                actionParam.warn("Action <" + tag + " name=\""+name+"\"> name is empty; not set");
+                return;
+            }
+            if ("global".equals(scope)) {
+                actionParam.setVariable(name, variable);
+            } else if ("root".equals(scope)) {
+                getFunctionVariables().setRootVariable(name, variable);
+            } else if ("this".equals(scope)) {
+                getThisFunctionVariable().setVariable(name, variable);
+            } else {
+                getFunctionVariables().setVariable(name, variable);
+            }
+        }
 
         protected File getSafeDir(ActionParam actionParam) {
             Variable<File> var = actionParam.getVariable("allowWriteDir");
