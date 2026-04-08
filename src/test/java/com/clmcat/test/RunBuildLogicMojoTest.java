@@ -61,4 +61,11 @@ public class RunBuildLogicMojoTest  {
     public void testStringMojoExecute(RunBuildLogicMojo mojo) throws Exception {
         mojo.execute();
     }
+
+    @Test
+    @Basedir("src/test/resources/plugin-test-run")
+    @InjectMojo(goal = "run", pom = "plugin-test-base64-pom.xml")
+    public void testBase64MojoExecute(RunBuildLogicMojo mojo) throws Exception {
+        mojo.execute();
+    }
 }

@@ -667,3 +667,39 @@ name: 设置指定变量的字符串值。
 
 ---
 
+## 编码解码
+
+| params参数 | 说明           | 是否必须         |
+|----------|--------------|--------------|
+| name     | 变量名          | 必填           |
+| ref      | 引用的变量        | value 不存在时必填 |
+| value    | 值字符串，与ref互斥  | 非必填          |
+| encoding | 编码 默认 UTF-8  | 非必填          |
+
+
+### < base64.encode > 编码
+
+```xml
+
+<base64.encode name="str" value="hello world" />
+<echo>${str}</echo> <!-- 输出：aGVsbG8gd29ybGQ= -->
+
+<str name="str">hello world</str>
+<base64.encode name="strEncode" ref="str" /> 
+<echo>${strEncode}</echo> <!-- 输出：aGVsbG8gd29ybGQ= --> 
+
+<base64.decode name="strDecode" ref="strEncode" />  
+<echo>${strDecode}</echo> <!-- 输出：hello world -->
+```
+
+
+### < base64.decode > 解码
+
+```xml
+
+<base64.encode name="str" value="hello world" />
+<echo>${str}</echo> <!-- 输出：aGVsbG8gd29ybGQ= -->
+
+<base64.decode name="strDecode" ref="str" />  
+<echo>${strDecode}</echo> <!-- 输出：hello world -->
+```

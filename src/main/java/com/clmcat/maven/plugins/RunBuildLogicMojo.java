@@ -8,6 +8,7 @@ import com.clmcat.maven.plugins.action.compare.LogicCompare;
 import com.clmcat.maven.plugins.action.execute.DefaultActionExecute;
 import com.clmcat.maven.plugins.action.factory.DefaultActionFactory;
 import com.clmcat.maven.plugins.action.support.*;
+import com.clmcat.maven.plugins.action.support.codec.Base64Action;
 import com.clmcat.maven.plugins.action.support.string.StringAction;
 import com.clmcat.maven.plugins.action.variable.FileVariable;
 import com.clmcat.maven.plugins.action.variable.FunctionVariablesReference;
@@ -65,6 +66,7 @@ public class RunBuildLogicMojo extends AbstractMojo {
         actionFactory.addActionType("list", ListAction.class);
         actionFactory.addActionType("http", HttpAction.class);
         actionFactory.addActionType("str", StringAction.class);
+        actionFactory.addActionType("base64", Base64Action.class);
 
         this.actionExecute = new DefaultActionExecute(actionFactory);
     }

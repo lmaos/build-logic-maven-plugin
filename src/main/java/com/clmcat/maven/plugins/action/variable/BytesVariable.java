@@ -19,6 +19,10 @@ public class BytesVariable extends Variable.AbstractVariable<byte[]> {
         this.encoding = encoding;
     }
 
+    public static Variable of(byte[] bytes, String encoding) {
+        return new BytesVariable(bytes, encoding);
+    }
+
     @Override
     public String getStringValue() {
         return new String(getValue(), Charset.forName(encoding));

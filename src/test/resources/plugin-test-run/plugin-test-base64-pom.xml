@@ -1,0 +1,23 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <base64.encode name="str" value="hello world" />
+                        <echo>${str}</echo>
+                        <str name="str1234" value="123456" />
+                        <echo>${str1234}</echo>
+                        <base64.encode name="str1234" ref="str1234" />
+                        <echo>${str1234}</echo>
+                        <base64.decode name="str1234" ref="str1234" />
+                        <echo>${str1234}</echo>
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
