@@ -99,7 +99,7 @@ public interface Action {
          * !触发执行操作, 默认内部调用顺序： before → callExecute → after
          * @param actionParam 全局参数
          * @param parentAction 上层调用的 Action 实例
-         * @throws Exception
+         * @throws Exception 执行异常
          */
         protected void triggerExecute(ActionParam actionParam, Action parentAction) throws Exception {
             beforeExecute(actionParam, parentAction); // 调用之前
@@ -144,7 +144,7 @@ public interface Action {
 
         /**
          * 设置变量
-         * @param actionParam
+         * @param actionParam 全局参数
          * @param scope 设置变量范围
          * @param name  变量名，如果不存在，则不会设置。
          * @param variable 变量值

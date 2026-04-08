@@ -14,7 +14,7 @@ public interface CodeBlockAction extends Action {
          * 重写方法， 当前方法替换为调用代码块的执行。 triggerExecute → codeBlockExecute， 增加 代码块线程变量。
          * @param actionParam 全局参数
          * @param parentAction 上层调用的 Action 实例
-         * @throws Exception
+         * @throws Exception 代码块执行异常
          */
         @Override
         public final void triggerExecute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -31,9 +31,9 @@ public interface CodeBlockAction extends Action {
          * <br>
          * 建议请重写: callCodeBlockExecute 实现子业务调用。
          *
-         * @param actionParam
-         * @param parentAction
-         * @throws Exception
+         * @param actionParam 全局参数
+         * @param parentAction 上层调用的 Action 实例
+         * @throws Exception 执行异常
          */
         @Override
         public void codeBlockExecute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -54,7 +54,7 @@ public interface CodeBlockAction extends Action {
          * @param actionParam 全局参数
          * @param parentAction 父调用
          * @param actions 子Action
-         * @throws Exception
+         * @throws Exception 代码块执行异常
          */
         protected void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
             super.callGroupExecute(actionParam, parentAction, actions);

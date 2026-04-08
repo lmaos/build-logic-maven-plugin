@@ -45,6 +45,10 @@ public interface GroupAction extends Action {
 
         /**
          * 当 Action 触发时为空时，默认执行操作：打印值。 方便查看 Action 实例的值
+         *
+         * @param actionParam 全局参数
+         * @param parentAction 上层调用的 Action 实例
+         * @throws Exception 执行异常
          */
         protected void emptyChildrenExecute(ActionParam actionParam, Action parentAction) throws Exception {
             String value = getValue();

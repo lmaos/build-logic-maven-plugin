@@ -58,7 +58,8 @@ public class StringAction extends Action.AbstractAction {
     }
 
     /**
-     * 字符串变量引用。
+     * 
+     * @return 字符串变量引用
      */
     public String getRef() {
         return ref;

@@ -14,24 +14,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* 列表操作.
-* 使用方法:
-* <pre>
-* {@code
-* <!-- 创建列表项 -->
-* <list name="appList">
-*     <item>item1</item>
-*     <item>item2</item>
-* </list>
+ * 列表操作.
+ * 使用方法:
+ * <pre>
+ * {@code
+ * <!-- 创建列表项 -->
+ * <list name="appList">
+ *     <item>item1</item>
+ *     <item>item2</item>
+ * </list>
  *
  * <!-- 添加列表项, 不存在变量则创建 -->
  * <list.add name="appList">
  *     <item>item1</item>
  *     <item>item2</item>
  * </list>
-*}</pre>
-*@aauthor zxy
-*  */
+ * }</pre>
+ * @author zxy
+ **/
 public class ListAction extends VariableAction {
 
     private static final Set<String> METHODS = XUtils.toSet("set", "add", "remove");
