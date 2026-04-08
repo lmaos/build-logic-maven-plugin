@@ -67,6 +67,7 @@ public class RunBuildLogicMojo extends AbstractMojo {
         actionFactory.addActionType("http", HttpAction.class);
         actionFactory.addActionType("str", StringAction.class);
         actionFactory.addActionType("base64", Base64Action.class);
+        actionFactory.addActionType("date", DateAction.class);
 
         this.actionExecute = new DefaultActionExecute(actionFactory);
     }

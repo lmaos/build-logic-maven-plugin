@@ -22,29 +22,31 @@ file：引用文件变量
     <mkdir path="${project.basedir}/publish" />
     <mkdir path="${project.basedir}/publish/scripts" />
     <mkdir path="${project.basedir}/publish/nginx" />
-    
-    <file name="appJarFile" path="${project.basedir}/target/app.jar" />
+    <mkdir path="${project.basedir}/version" />
+
+    <file name="appJarFile" path="${project.basedir}/target/${project.build.finalName}.jar" />
     <!-- 复制 app.jar 到 publish 目录下 -->
-    <file name="appJarFileWrite" path="${project.basedir}/publish/app.jar" />
+    <file name="appJarFileWrite" path="${project.basedir}/publish/${project.build.finalName}.jar" />
     <!-- 读取 appJarFile 文件内容， 到目标 appJarFileWrite 文件, overwrite="true" 表示覆盖-->
     <write ref="appJarFile" file="appJarFileWrite"  overwrite="true" />
     <!-- 初始化一个默认启动脚本 -->
-    <file name="startShell" file="${project.basedir}/publish/start.sh" />
+    <file name="startShell" path="${project.basedir}/publish/start.sh" />
     <!-- 写入默认启动脚本内容 -->
     <write file="startShell" ><![CDATA[
-    #!/bin/sh
-    
-    APP_NAME=app
-    SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-    pkill -f "${APP_NAME}.jar"
-    sleep 3
-    nohup java "-Xms1g -Xmx1g" -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${APP_NAME}.log" 2>&1 &
+#!/bin/sh
+
+APP_NAME=app
+JAVA_OPTS="-Xms800m -Xmx800m"
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+pkill -f "${APP_NAME}.jar"
+sleep 3
+nohup java ${JAVA_OPTS} -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${APP_NAME}.log" 2>&1 &
     ]]></write>
-    
+
     <!-- 压缩目录 -->
     <date name="versionDate" format="yyyyMMddHHmmss" />
     <!-- 创建 zip 文件变量 -->
-    <file name="appZipFile" path="${project.basedir}/app-${versionDate}.zip"/>
+    <file name="appZipFile" path="${project.basedir}/version/app-${versionDate}.zip"/>
     <!-- 压缩目录到 zip 文件 -->
     <zip file="appZipFile">
         <entry dir="${project.basedir}/publish"/>
@@ -65,8 +67,6 @@ file：引用文件变量
         </then>
         <else>app.zip 压缩失败</else>
     </if>
-    
-    
 </main>
 
 ```

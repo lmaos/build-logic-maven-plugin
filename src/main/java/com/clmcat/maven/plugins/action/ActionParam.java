@@ -55,6 +55,9 @@ public class ActionParam {
     public void error(String error) {
         mojo.getLog().error(format(error));
     }
+    public void error(String error, Exception e) {
+        mojo.getLog().error(format(error), e);
+    }
 
 
     public void setVariable(String name, Variable value) {
