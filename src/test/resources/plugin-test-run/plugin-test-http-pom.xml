@@ -16,7 +16,7 @@
                                 <echo>${response}</echo>
                                 <echo>${response.code}</echo>
                                 <echo>${response.message}</echo>
-                                <!-- 读取Header 中数据， getHeader(String name) , 必须要指定类型，否则会报错 -->
+                                <!-- Read header data: getHeader(String name); the type must be specified or an error will occur -->
                                 <echo>${response.headers.getHeader(String "Content-Type")}</echo>
                             </response>
                         </http>

@@ -17,9 +17,9 @@ public class VariableAction extends Action.AbstractAction {
 
     private String name;
     private String scope;
-    private String ref; // 引用其他变量
+    private String ref; // reference to another variable
     private Variable storeVariable;
-    // 是否必须指定name属性
+    // whether the name attribute is required
     private boolean nameRequired = true;
 
     public void setName(String name) {
@@ -56,7 +56,7 @@ public class VariableAction extends Action.AbstractAction {
         if (nameRequired && XUtils.isEmpty(name)) {
             throw new IllegalArgumentException("any variable must have name attribute; <" + getTag() + " name=\"name\" />");
         }
-        // 严格匹配：只能是 $ 0-9 a-z A-Z，且不能为空
+        // Strict match: only $, 0-9, a-z, A-Z, _ are allowed; must not be empty
         if (name != null && !XUtils.isVariableName(name)) {
             throw new MojoExecutionException("any variable name must only contain $, 0-9, a-z, A-Z,_ (no dots allowed): <" + getTag() + " name=\"" + name + "\" />");
         }

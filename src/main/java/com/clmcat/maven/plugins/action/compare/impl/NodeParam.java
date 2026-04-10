@@ -6,23 +6,22 @@ public interface NodeParam {
 
 
     /**
-     * d
-     * 读取节点参数
-     * @param left 左节点变量名
-     * @param right 右节点变量名
-     * @return 节点变量实例
+     * Read node parameter.
+     * @param left left-side variable name
+     * @param right right-side variable name
+     * @return the node variable instance
      */
     public NodeVariable getNodeVariable(String left, String right);
 
     /**
-     * 返回变量，如果变量不存在，则返回 null
-     * @param name 变量名
-     * @return 变量实例
+     * Return the variable by name, or null if it does not exist.
+     * @param name variable name
+     * @return variable instance
      */
     Variable getVariable(String name);
 
     /**
-     * 读取变量值
+     * Read the variable value.
      */
     interface NodeVariable {
         Variable getLeftVariable();

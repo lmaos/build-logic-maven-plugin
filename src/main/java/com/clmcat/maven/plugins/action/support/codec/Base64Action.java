@@ -49,7 +49,7 @@ public class Base64Action extends VariableAction {
             } else if (variable.getValue() instanceof File) {
                 bytes = XUtils.readFileToBytes((File) variable.getValue());
             } else {
-                // 无法进行base64编码， 类型错误
+                // cannot perform base64 encoding: unsupported type
                 throw new MojoExecutionException("Base64 encode Unknown type: " + variable.getValue().getClass().getName());
             }
             byte[] encodedBytes = base64Encode(bytes);

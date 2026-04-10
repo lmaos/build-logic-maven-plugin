@@ -7,9 +7,9 @@ import com.clmcat.maven.plugins.action.variable.ListVariable;
 import java.util.Arrays;
 import java.util.List;
 /**
- * 字符串分割方法实现
+ * String split method implementation.
  * <p>
- * 用于将字符串按照指定的分隔符分割成字符串列表
+ * Splits a string into a list of strings using a specified delimiter.
  * </p>
  */
 public class SplitStringMethod implements StringAction.StringMethod {
@@ -22,13 +22,13 @@ public class SplitStringMethod implements StringAction.StringMethod {
         return new String[]{_params};
     }
     /**
-     * 处理字符串分割操作
+     * Handle a string split operation.
      *
-     * @param stringAction StringAction 实例，包含操作相关信息
-     * @param params 方法参数数组，第一个元素为分割符
-     * @param variable 要处理的变量
-     * @return 分割后的字符串列表变量
-     * @throws Exception 处理过程中可能抛出的异常
+     * @param stringAction the StringAction instance containing operation metadata
+     * @param params method parameter array; the first element is the delimiter
+     * @param variable the variable to process
+     * @return a ListVariable containing the split string elements
+     * @throws Exception if an error occurs during processing
      */
     @Override
     public Variable handler(StringAction stringAction, String[] params, Variable variable) throws Exception {

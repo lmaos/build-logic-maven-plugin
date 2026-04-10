@@ -4,7 +4,7 @@ import com.clmcat.maven.plugins.action.Variable;
 import com.clmcat.maven.plugins.action.variable.BooleanVariable;
 
 /**
- * 值： true|false, 或 变量名。
+ * A value: true|false, or a variable name.
  * @author zhangxingyu
  * @since 1.0.0
  *
@@ -37,9 +37,9 @@ public class FieldElement implements EvaluateNode {
         String _field = field.trim();
 
         Variable variable = nodeParam.getVariable(_field);
-        // 验证变量是否存在。不存在， 验证是否是 boolean 类型，不是则直接返回false。
+        // Check whether the variable exists; if not, check if it is a boolean literal, otherwise return false.
         if (variable == null || !variable.isExist()) {
-            // 去掉引号
+            // strip surrounding quotes
             if (_field.startsWith("\"") && _field.endsWith("\"")
                     || _field.startsWith("'") && _field.endsWith("'")) {
                 _field = _field.substring(1, _field.length() - 1);
@@ -53,19 +53,19 @@ public class FieldElement implements EvaluateNode {
 
             return false;
         }
-        // 如果变量是Boolean类型，则直接返回变量值
+        // If the variable is a Boolean type, return its value directly
         if (variable instanceof BooleanVariable || variable.getValue() instanceof Boolean) {
             return (Boolean) variable.getValue();
         }
 
         String stringValue = variable.getStringValue();
-        // 如果变量是字符串类型，则根据字符串值判断是否为true或false
+        // If the variable is a String type, evaluate based on its string value
         if ("true".equals(stringValue)) {
             return true;
         } else if ("false".equals(stringValue)) {
             return false;
         }
-        // 变量存在，则也是真即可。
+        // If the variable exists, it is truthy
         return true;
     }
 

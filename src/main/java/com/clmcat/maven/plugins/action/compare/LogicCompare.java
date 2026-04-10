@@ -66,8 +66,8 @@ public class LogicCompare implements Compare {
 
             // &&， ||
         MatchResult logicResult = logicMatchTree.matchFristResult(test, start, end);
-        if (logicResult != null) { // 匹配到了一个符号。
-            logicEnd = logicResult.getStart(); // 当前符号的开始位置，则是逻辑的结束位置。 "xxx==ccc &&" -> "xx==ccc"
+        if (logicResult != null) { // a logic operator was matched
+            logicEnd = logicResult.getStart(); // the operator's start position is the logic end position. e.g. "xxx==ccc &&" -> "xxx==ccc"
         } else {
             logicEnd = end;
         }
@@ -75,7 +75,7 @@ public class LogicCompare implements Compare {
         MatchResult symbolResult = symbolMatchTree.matchFristResult(test, logicStart, logicEnd);
 
         if (symbolResult == null) {
-            // 不存在比较符号，则认为当前数据是 "变量" 或 布尔 类型
+            // no comparison operator found: treat the token as a variable or boolean value
             String field = test.substring(logicStart, logicEnd).trim();
             if (!field.isEmpty()) {
                 FieldElement fieldElement = new FieldElement(field);

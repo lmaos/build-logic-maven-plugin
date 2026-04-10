@@ -6,7 +6,7 @@ import com.clmcat.maven.plugins.action.FunctionAction;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
- * 主函数。入口函数。
+ * Main entry-point action.
  */
 public class MainAction extends FunctionAction.AbstractFunctionAction {
 

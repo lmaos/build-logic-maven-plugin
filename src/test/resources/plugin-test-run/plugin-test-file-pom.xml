@@ -9,16 +9,16 @@
                     <main>
                         <file name="testTxtFile" path="${project.basedir}/test.txt" />
                         <echo>${testTxtFile.exists()}</echo>
-                        <echo test="testTxtFile">文件存在</echo>
-                        <echo test="!testTxtFile">文件存在不存在</echo>
+                        <echo test="testTxtFile">File exists</echo>
+                        <echo test="!testTxtFile">File does not exist</echo>
 
                         <read name="testTxtFileRead" file="testTxtFile" />
                         <echo>testTxtFileRead=${testTxtFileRead}</echo>
                         <file name="testTxtFileWrite" path="${project.basedir}/test-write.txt" />
                         <write file="testTxtFileWrite" ref="testTxtFileRead" overwrite="true" />
 
-                        <!-- 便利文件列表, 包含子目录 -->
-                        <echo>便利文件列表，包含子目录</echo>
+                        <!-- Traverse file list, including subdirectories -->
+                        <echo>Traverse file list, including subdirectories</echo>
                         <file name="testDir" path="${project.basedir}" />
                         <foreach collection="testDir" item="item">
                             <echo>file: ${item}</echo>

@@ -11,10 +11,11 @@ public interface CodeBlockAction extends Action {
     abstract class AbstractCodeBlockAction extends GroupAction.AbstractGroupAction implements CodeBlockAction {
 
         /**
-         * 重写方法， 当前方法替换为调用代码块的执行。 triggerExecute → codeBlockExecute， 增加 代码块线程变量。
-         * @param actionParam 全局参数
-         * @param parentAction 上层调用的 Action 实例
-         * @throws Exception 代码块执行异常
+         * Overrides triggerExecute to push a new code-block scope frame first.
+         * Call order: triggerExecute → codeBlockExecute, with a new thread-local variable scope pushed.
+         * @param actionParam global action parameters
+         * @param parentAction the parent Action instance that invoked this action
+         * @throws Exception code-block execution exception
          */
         @Override
         public final void triggerExecute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -24,23 +25,26 @@ public interface CodeBlockAction extends Action {
         }
 
         /**
-         * 代码块执行， 默认实现调用 super.triggerExecute。(调用顺序 → codeBlockExecute → triggerExecute)；
+         * Execute the code block. The default implementation delegates to super.triggerExecute.
+         * Call order: codeBlockExecute → triggerExecute.
          *
          * <br>
-         * 如果重写此方法， 在子实现中调用 super.codeBlockExecute(actionParam, parentAction) 保持默认行为。 否则 beforeExecute 和 afterExecute 不会主动执行。
+         * If you override this method, call super.codeBlockExecute(actionParam, parentAction) to retain
+         * the default behaviour; otherwise beforeExecute and afterExecute will not be called automatically.
          * <br>
-         * 建议请重写: callCodeBlockExecute 实现子业务调用。
+         * It is recommended to override callCodeBlockExecute for custom business logic.
          *
-         * @param actionParam 全局参数
-         * @param parentAction 上层调用的 Action 实例
-         * @throws Exception 执行异常
+         * @param actionParam global action parameters
+         * @param parentAction the parent Action instance that invoked this action
+         * @throws Exception execution exception
          */
         @Override
         public void codeBlockExecute(ActionParam actionParam, Action parentAction) throws Exception {
             super.triggerExecute(actionParam, parentAction);
         }
         /**
-            重写方法， 当前方法替换为调用代码块的执行。 callGroupExecute → callCodeBlockExecute
+         * Overrides callGroupExecute to delegate to callCodeBlockExecute.
+         * Call order: callGroupExecute → callCodeBlockExecute
          */
         @Override
         protected final void callGroupExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
@@ -48,13 +52,13 @@ public interface CodeBlockAction extends Action {
         }
 
         /**
-         * 调用代码块的执行。 当前执行顺序: {beforeExecute} → callCodeBlockExecute (当前位置) → {afterExecute}； 默认实现调用 super.callGroupExecute，子Action依次调用
+         * Execute the code block. Current call order: {beforeExecute} → callCodeBlockExecute (here) → {afterExecute}.
+         * The default implementation calls super.callGroupExecute, which executes each child action in sequence.
          *
-         *
-         * @param actionParam 全局参数
-         * @param parentAction 父调用
-         * @param actions 子Action
-         * @throws Exception 代码块执行异常
+         * @param actionParam global action parameters
+         * @param parentAction parent caller
+         * @param actions child actions
+         * @throws Exception code-block execution exception
          */
         protected void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
             super.callGroupExecute(actionParam, parentAction, actions);

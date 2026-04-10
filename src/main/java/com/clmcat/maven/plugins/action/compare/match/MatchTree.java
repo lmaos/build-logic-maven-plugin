@@ -22,7 +22,7 @@ public class MatchTree {
         return  matchTree;
     }
 
-    // 添加匹配文本
+    // Add a match text to the trie
     private void add(String text) {
         MatchNode node = root;
         for (int i = 0; i < text.length(); i++) {

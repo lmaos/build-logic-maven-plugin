@@ -20,7 +20,7 @@ public class WriteAction extends Action.AbstractAction {
     private boolean append;
     private boolean overwrite;
     private String encoding = "UTF-8";
-    // 引用变量
+    // referenced variable
     private String ref;
 
     @Override
@@ -44,7 +44,7 @@ public class WriteAction extends Action.AbstractAction {
                 actionParam.info("File already exists, skip writing: " + writeFile);
                 return;
             }
-            // 写文件
+            // write to file
             if(XUtils.isEmpty(ref)) {
 
                 try (FileOutputStream fos = new FileOutputStream(writeFile, append)) {

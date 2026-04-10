@@ -27,7 +27,7 @@ public class RandomStringMethod implements StringAction.StringMethod {
         } else if (params.length >= 2) {
             int min = Integer.parseInt(params[0]);
             int max = Integer.parseInt(params[1]);
-            // 随机总数
+            // total random count
             count = max <= min ? min : random.nextInt(max - min + 1)  + min;
         }
 

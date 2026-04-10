@@ -30,25 +30,25 @@ public class DeleteAction extends Action.AbstractAction {
 
             if (file.exists()) {
                 if (file.isDirectory()) {
-                    actionParam.info("正在进行删除目录: " + file );
+                    actionParam.info("Deleting directory: " + file );
                     Files.walk(file.toPath())
-                            .sorted(java.util.Comparator.reverseOrder()) // 先子后父
+                            .sorted(java.util.Comparator.reverseOrder()) // children first, then parents
                             .forEach(p -> {
                                 try {
-                                    actionParam.info("删除文件: " + p);
+                                    actionParam.info("Deleting: " + p);
                                     Files.delete(p);
                                 } catch (Exception e) {
                                     // ignore
-                                    actionParam.error("删除文件失败: " + p + ", 异常: ", e);
+                                    actionParam.error("Failed to delete: " + p + ", exception: ", e);
                                 }
                             });
                 }
                 file.delete();
             } else{
-                actionParam.warn("删除的文件已经不存在: " + file +"");
+                actionParam.warn("File to delete does not exist: " + file);
             }
         } else {
-            actionParam.warn("无法成功删除， 不再安全目录下， 强制删除设置属性： force='true' , 当前安全目录: " + getSafeDir(actionParam) + ", 删除文件: " + file);
+            actionParam.warn("Cannot delete: path is outside the safe directory. Use force='true' to override. Safe directory: " + getSafeDir(actionParam) + ", target file: " + file);
         }
 
 

@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 列表操作.
- * 使用方法:
+ * List operations.
+ * Usage:
  * <pre>
  * {@code
- * <!-- 创建列表项 -->
+ * <!-- Create list items -->
  * <list name="appList">
  *     <item>item1</item>
  *     <item>item2</item>
  * </list>
  *
- * <!-- 添加列表项, 不存在变量则创建 -->
+ * <!-- Append list items; creates the variable if it does not exist -->
  * <list.add name="appList">
  *     <item>item1</item>
  *     <item>item2</item>

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 函数内变量
+ * Variables held within a function scope.
  */
 public class FunctionVariableItem implements FunctionVariable {
 
@@ -23,7 +23,7 @@ public class FunctionVariableItem implements FunctionVariable {
     }
 
     /**
-     * 当前函数变量。
+     * Variable map for the current function scope.
      */
     private Map<String, Variable> variables = new HashMap<String, Variable>();
 

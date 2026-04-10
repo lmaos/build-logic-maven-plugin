@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 函数内变量
+ * Variables held within a function scope.
  */
 public interface FunctionVariable {
 

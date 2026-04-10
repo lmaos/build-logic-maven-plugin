@@ -14,19 +14,19 @@ import org.apache.maven.plugin.MojoExecutionException;
 import java.util.*;
 
 /**
- * 字符串操作
+ * String operations.
  * <pre>
  *     {@code
- *     <!-- to 赋值给谁，如果不设置则赋值给name -->
+ *     <!-- assign to 'to'; if not set, overwrites 'name' -->
  *     <str name="name" to="to" />
  *     <str.set name="name" value="hello" />
- *     <!-- name变量字符串裁剪 start=1, end=3 赋值给 to="aaa"-->
+ *     <!-- substring of 'name', start=1, end=3, assign to to="aaa" -->
  *     <str.substr name="name" to="aaa" params="1,3"/>
- *     <!-- 裁剪 从1位置开始到结束 -->
+ *     <!-- substring from position 1 to end -->
  *     <str.substr name="name" params="1"/>
- *     <!-- 分割字符串，获得一个list集合 -->
+ *     <!-- split string into a list -->
  *     <str.split name="name" to="" />
- *     <!-- 随机字符串， name 可以是 字符串变量，List变量， params="最小，最大，字符分割方式" ，可以单独存在1个, 2个参数 -->
+ *     <!-- random string; name can be a String variable or List variable; params="min,max,splitChar", at least one param required -->
  *     <str.random name=""  to="" params="10" />
  *     <str.trim name=""  />
  *     <str.trim name="" to="" />
@@ -59,7 +59,7 @@ public class StringAction extends Action.AbstractAction {
 
     /**
      * 
-     * @return 字符串变量引用
+     * @return string variable reference
      */
     public String getRef() {
         return ref;
@@ -67,7 +67,7 @@ public class StringAction extends Action.AbstractAction {
 
 
     public  static  interface StringMethod {
-        // 解析参数
+        // parse parameters
         default String[] paserParams(String _params){
             String[] params = null;
             if (XUtils.isNotEmpty(_params)) {
@@ -148,7 +148,7 @@ public class StringAction extends Action.AbstractAction {
         }
 
 
-        ///  先简单实现支持功能，后续再优化结构设计。
+        ///  Simple initial implementation; structure to be refined later.
         StringMethod stringMethod = methods.get(methodName.toLowerCase());
         if (stringMethod == null) {
             throw new Exception("operation method not found,<" + getTag() + " name = " + name + ">");

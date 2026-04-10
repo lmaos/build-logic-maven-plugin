@@ -113,7 +113,7 @@ public class VariableFactory {
                     } else if (clazz == File.class) {
                         return FileVariable.of(new File(value));
                     } else  {
-                        // 不支持的字符串的类型转换方式
+                        // unsupported string-to-type conversion
                         throw new IllegalArgumentException("not support type convert: " + type+", value: "+value);
                     }
                 } catch (ClassNotFoundException e) {

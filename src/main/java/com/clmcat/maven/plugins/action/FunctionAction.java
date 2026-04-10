@@ -6,10 +6,10 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 public interface FunctionAction extends GroupAction {
     /**
-     * 触发函数执行
-     * @param actionParam 全局参数实例
-     * @param parentAction 父操作实例
-     * @throws Exception 执行异常
+     * Trigger function execution.
+     * @param actionParam global action parameters instance
+     * @param parentAction parent action instance
+     * @throws Exception execution exception
      */
     void triggerFunctionExecute(ActionParam actionParam, Action parentAction) throws Exception;
 
@@ -27,8 +27,8 @@ public interface FunctionAction extends GroupAction {
 
         /**
          *
-         * @param name 默认的函数名
-         * @param autoExecute 是否自动执行
+         * @param name default function name
+         * @param autoExecute whether to execute automatically
          */
         protected AbstractFunctionAction(String name, boolean autoExecute) {
             this.name = name;
@@ -37,14 +37,14 @@ public interface FunctionAction extends GroupAction {
 
         /**
          *
-         * @param autoExecute 是否自动执行
+         * @param autoExecute whether to execute automatically
          */
         protected AbstractFunctionAction(boolean autoExecute) {
 
             this.autoExecute = autoExecute;
         }
 
-        // 函数名
+        // function name
         private String name;
         private boolean autoExecute;
 
@@ -68,16 +68,16 @@ public interface FunctionAction extends GroupAction {
                 throw new MojoExecutionException("Function can only be defined in <main> or root level");
             }
             String name = getFunctionName();
-            // 函数名必填
+            // function name is required
             if (name == null || (name = name.trim()).isEmpty()) {
                 throw new MojoExecutionException("Function name is required");
             }
-            // 严格匹配：只能是 $ 0-9 a-z A-Z，且不能为空
+            // Strict match: only $, 0-9, a-z, A-Z are allowed; must not be empty
             if (!name.matches("^[$0-9a-zA-Z]+$")) {
                 throw new MojoExecutionException("Function name must only contain $, 0-9, a-z, A-Z (no dots allowed): <func name=\"" + name + "\" />");
             }
 
-            // 如果不进行自动执行，将函数添加到变量中
+            // If not auto-executing, register the function as a variable
             if (!isAutoExecute()) {
                 if (actionParam.getVariable("function:" + name).isExist()) {
                     throw new MojoExecutionException("Function name " + name + " is already defined");
@@ -137,7 +137,7 @@ public interface FunctionAction extends GroupAction {
         }
 
         public void setAutoExecute(boolean autoExecute) {
-            this.autoExecute = autoExecute; // 使用 this 关键字引用实例变量
+            this.autoExecute = autoExecute; // use 'this' to reference the instance field
         }
 
         @Override

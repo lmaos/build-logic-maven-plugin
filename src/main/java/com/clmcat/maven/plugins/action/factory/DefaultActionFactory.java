@@ -67,7 +67,7 @@ public class DefaultActionFactory implements ActionFactory {
                 ((PlexusConfigurationAware) t).setPlexusConfiguration(config);
             }
 
-            ///  组 Action
+            ///  Group action
             if (t instanceof GroupAction) {
                 PlexusConfiguration[] children = config.getChildren();
                 if (children != null && children.length > 0) {
@@ -85,14 +85,14 @@ public class DefaultActionFactory implements ActionFactory {
                 for (String attributeName : attributeNames) {
                     try {
                         Field declaredField = findField(attributeName, actionClass);
-                        // 忽略 NotAttr 注解的字段
+                        // ignore fields annotated with @NotAttr
                         if (declaredField.isAnnotationPresent(NotAttr.class)) {
                             continue;
                         }
 
 
                         int modifiers = declaredField.getModifiers();
-                        // 忽略 static 或 final 字段
+                        // ignore static or final fields
                         if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
                             continue;
                         }
@@ -102,7 +102,7 @@ public class DefaultActionFactory implements ActionFactory {
                         Object object = parseValue(attribute, declaredField.getType());
                         declaredField.set(t, object);
                     } catch (NoSuchFieldException e) {
-                        // 无这个字段
+                        // no such field
                         throw new MonitorSettingException("Tag:" + name + ", attr:" + attributeName + " not found");
                     }
                 }

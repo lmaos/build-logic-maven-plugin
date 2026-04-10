@@ -7,7 +7,7 @@
                 <version>1.0-SNAPSHOT</version>
                 <configuration>
                     <main>
-                        <!-- 添加列表项, 不存在变量则创建 -->
+                        <!-- Append list items; creates the variable if it does not exist -->
                         <list.add name="appList">
                            <item>item1</item>
                            <item>item2</item>

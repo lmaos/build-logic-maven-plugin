@@ -61,12 +61,12 @@ public class IfAction extends CodeBlockAction.AbstractCodeBlockAction  {
                 }
                 elseAction = (ElseAction) action;
             } else if  (action instanceof ElseIfAction) {
-                // <elseif test="condition"> 必须存在 test 属性
+                // <elseif test="condition"> must have a test attribute
                 if (((ElseIfAction) action).getTest() == null || ((ElseIfAction) action).getTest().trim().isEmpty()) {
                     throw new MojoExecutionException("elseif action must have test attribute， <elseif test=\"condition\">");
                 }
                 elseIfActions.add((ElseIfAction) action);
-            } else { // 只支持 <then> <elseif> <else>
+            } else { // only <then>, <elseif>, <else> are supported
                 throw new MojoExecutionException("if action must have only <then>, <elseif>, <else> actions");
             }
 

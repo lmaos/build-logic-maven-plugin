@@ -20,7 +20,7 @@ public class VariableNodeParam implements NodeParam {
 
         Variable leftVariable = variable.getVariable(left);
         Variable rightVariable = variable.getVariable(right);
-        /// 两个变量均不存在时,判断是否为数字,如果是数字,则转换为数字变量,否则转换为字符串变量
+        /// When neither variable exists, check if both sides are numbers; if so create NumberVariables, otherwise StringVariables
         if (leftVariable == null && rightVariable == null) {
             if (isNumber(left) && isNumber(right)) {
                 leftVariable =  NumberVariable.of(left);
@@ -30,7 +30,7 @@ public class VariableNodeParam implements NodeParam {
                 rightVariable = StringVariable.of(unquote(right));
             }
         } else if (leftVariable == null && rightVariable != null) {
-            // 左值不存在，右值存在时， 通过右边的值解析left变量，
+            // Left value does not exist but right does: resolve left based on the right type
             if (rightVariable instanceof StringVariable) {
                 leftVariable = StringVariable.of(unquote(left));
             }  else if (rightVariable instanceof NumberVariable) {
@@ -44,7 +44,7 @@ public class VariableNodeParam implements NodeParam {
                 throw new IllegalArgumentException("not support type : "  + rightVariable.getClass().getSimpleName() + ", left : " + left +", right : " + right);
             }
         } else  {
-            // 右值不存在，通过左边的值解析right变量，
+            // Right value does not exist: resolve right based on the left type
             if (leftVariable instanceof StringVariable) {
                 rightVariable = StringVariable.of(unquote(right));
             }  else if (leftVariable instanceof NumberVariable) {

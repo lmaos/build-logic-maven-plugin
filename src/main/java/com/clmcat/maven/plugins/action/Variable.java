@@ -51,16 +51,16 @@ public interface Variable<T> extends Comparable<Variable<T>> {
 
         @Override
         public int compareTo(Variable<T> o) {
-            // 1. 对方为空 → 自己大，排后面
+            // 1. Other side is null → self is greater, sort later
             if (o == null || !o.isExist() || o.getValue() == null) {
                 return 1;
             }
-            // 2. 自己为空 → 自己小，排前面
+            // 2. Self is null → self is smaller, sort earlier
             if (this.getValue() == null) {
                 return -1;
             }
 
-            // 3. 尝试用值比较（安全版）
+            // 3. Try value comparison (safe version)
             T thisVal = this.getValue();
             T thatVal = o.getValue();
 
@@ -68,7 +68,7 @@ public interface Variable<T> extends Comparable<Variable<T>> {
                 return ((Comparable<T>) thisVal).compareTo(thatVal);
             }
 
-            // 4. 降级字符串比较（绝对防 NPE！）
+            // 4. Fall back to string comparison (absolutely NPE-safe!)
             String s1 = this.getStringValue();
             String s2 = o.getStringValue();
 

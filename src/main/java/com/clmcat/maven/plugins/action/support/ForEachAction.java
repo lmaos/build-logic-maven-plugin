@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
-    // 变量名
+    // collection name
     private String collection;
-    // item 变量名
+    // item variable name
     private String item = "item";
     @Override
     public void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
@@ -61,7 +61,7 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
                     getFunctionVariables().getFirst().setVariable(this.item, fileVariable);
                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                 } else {
-                    // 是目录的情况
+                    // handle the case where the FileVariable is a directory
                     LinkedList<File> dirs = new LinkedList<>();
                     dirs.add(file);
                     int index = 0;

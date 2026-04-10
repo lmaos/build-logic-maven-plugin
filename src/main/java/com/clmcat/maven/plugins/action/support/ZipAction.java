@@ -15,15 +15,15 @@ import java.util.zip.ZipOutputStream;
 
 
 /**
- * 压缩文件.
- * 使用方法:
+ * Zip file compression.
+ * Usage:
  * <pre>
  * {@code
- *  <!-- 创建文件对象 -->
+ *  <!-- Create a file object -->
  *  <file name="appZipFile" file="${project.basedir}/app.zip"/>
- *  <!-- 压缩文件 -->
+ *  <!-- Compress files -->
  *  <zip file="appZipFile">
- *      <!-- 压缩目录 -->
+ *      <!-- Compress a directory -->
  *     <entry dir="${project.basedir}/test_dir"/>
  * </zip>
  *}</pre>
@@ -68,12 +68,12 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
         }
         List<ZipEntryAction.ZipEntry> filesToZip = fileVariable.getValue();
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
-            byte[] buffer = new byte[8192]; // 缓冲区
+            byte[] buffer = new byte[8192]; // buffer
 
             for (ZipEntryAction.ZipEntry zipEntry : filesToZip) {
-                // 创建 ZIP 条目（保持文件名，如需带目录可自行修改）
+                // Create a ZIP entry (file name is kept as-is; adjust if directory prefix is needed)
                 zos.putNextEntry(zipEntry.getZipEntry());
-                // 读取文件并写入 ZIP
+                // Read the file and write it to the ZIP
                 try (FileInputStream fis = new FileInputStream(zipEntry.getFile())) {
                     int len;
                     while ((len = fis.read(buffer)) != -1) {
@@ -114,17 +114,17 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
         @Override
         protected void callExecute(ActionParam actionParam, Action parentAction) throws Exception {
 
-                // 解析目录
+                // Resolve the directory
                 this.dir = actionParam.format(this.dir);
 
                 actionParam.info("zip.entry, dir: " + dir+", pattern: " + pattern);
-                // 必须在 zip 内执行
+                // Must be executed inside <zip></zip>
                 if (!(parentAction instanceof ZipAction)) {
                     throw new MojoExecutionException("This operation must be executed within <zip></zip>");
                 }
 
                 File rootDir = new File(getDir());
-                // 校验目录
+                // Validate the directory
                 if (!rootDir.exists()) {
                     throw new MojoExecutionException("Directory not exists: " + rootDir.getAbsolutePath());
                 }
@@ -132,13 +132,13 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
                     throw new MojoExecutionException("Path is not a directory: " + rootDir.getAbsolutePath());
                 }
 
-                // 存储所有匹配到的文件
+                // Collect all matching files
                 List<File> matchedFiles = new ArrayList<>();
 
-                // 递归遍历目录 + 子目录
+                // Recursively traverse directory and subdirectories
                 listFiles(rootDir, getPattern(), matchedFiles);
 
-                // 日志输出
+                // Log output
                 actionParam.info("Found matched files: " + matchedFiles.size());
                 for (File file : matchedFiles) {
                     if (file.isFile() && file.exists()) {
@@ -164,18 +164,18 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
         }
 
         // =========================================
-        // 递归遍历：目录 + 子目录 + 模糊匹配
+        // Recursive traversal: directory + subdirectories + wildcard matching
         // =========================================
         private void listFiles(File currentDir, String pattern, List<File> matchedFiles) {
             File[] files = currentDir.listFiles();
             if (files == null) return;
 
             for (File file : files) {
-                // 是目录 → 递归进去
+                // Is a directory → recurse into it
                 if (file.isDirectory()) {
                     listFiles(file, pattern, matchedFiles);
                 }
-                // 是文件 → 匹配
+                // Is a file → check pattern match
                 else if (wildcardMatch(file.getName(), pattern)) {
                     matchedFiles.add(file);
                 }
@@ -187,7 +187,7 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
             if (pattern == null || pattern.isEmpty()) return true;
             if (pattern.equals("*")) return true;
             // =========================================
-            // 规则 1：以 regex: 开头 → 直接按标准正则执行
+            // Rule 1: starts with "regex:" → use it as a standard Java regex
             // =========================================
             if (pattern.startsWith("regex:")) {
                 String realRegex = pattern.substring("regex:".length());
@@ -195,7 +195,7 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
             }
 
             // =========================================
-            // 规则 2：默认 → 简单通配符（仅 * 代表任意字符）
+            // Rule 2: default → simple wildcard (only * represents any characters)
             // =========================================
             String regex = pattern.replace(".","\\.").replace("*",".*");
             return fileName.matches(regex);

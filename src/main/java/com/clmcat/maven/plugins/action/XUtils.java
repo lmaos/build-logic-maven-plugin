@@ -96,9 +96,9 @@ public class XUtils {
     }
 
     /**
-     * 将任意对象转换 JSON String 的简便方法，
-     * @param object 任意非值对象
-     * @param allString 值全部作为 String 使用。
+     * Convenience method to convert any object to a JSON String.
+     * @param object any non-primitive object
+     * @param allString treat all values as String.
      * @return JSON String
      */
     public static String toJsonString(Object object, boolean allString) {
@@ -165,7 +165,7 @@ public class XUtils {
             sb.append('"').append(object.toString()).append('"');
         } else {
             Class<?> aClass = object.getClass();
-            // 读取所有get方法
+            // read all getter methods
             Method[] methods = aClass.getMethods();
             sb.append("{");
             for (Method m : methods) {
@@ -357,7 +357,7 @@ public class XUtils {
         return false;
     }
     /*
-     * 校验变量名是否符合要求, 只能包含字母、数字、下划线和美元符号
+     * Validates a variable name; only letters, digits, underscores, and dollar signs are allowed.
      */
     public static boolean isVariableName(String name) {
         return name != null && name.matches("^[$0-9a-zA-Z_]+$");

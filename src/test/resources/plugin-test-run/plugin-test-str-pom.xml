@@ -24,12 +24,12 @@
 
 
                         <str name="str">hello world</str>
-                        <echo>${str.length()}</echo> <!-- 输出：11 -->
-                        <echo>${str.toUpperCase()}</echo> <!-- 输出：HELLO WORLD -->
-                        <echo>${str.substring(int 0, int 5)}</echo> <!-- 输出：HELLO -->
+                        <echo>${str.length()}</echo> <!-- output: 11 -->
+                        <echo>${str.toUpperCase()}</echo> <!-- output: HELLO WORLD -->
+                        <echo>${str.substring(int 0, int 5)}</echo> <!-- output: HELLO -->
 
                         <file name="file" path="${project.basedir}/test.txt"/>
-                        <echo>${file.getName()}</echo> <!-- 输出：true -->
+                        <echo>${file.getName()}</echo> <!-- output: true -->
                     </main>
                 </configuration>
             </plugin>

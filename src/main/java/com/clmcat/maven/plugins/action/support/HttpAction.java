@@ -43,7 +43,7 @@ public class HttpAction extends VariableAction {
         String encoding = this.encoding;
         String method = this.method;
         HttpResponse httpResponse = null;
-        // 执行http请求
+        // execute HTTP request
         ActionFactory actionFactory = actionParam.getActionFactory().create();
         actionFactory.addActionType("header", HttpHeaderAction.class);
         actionFactory.addActionType("content", HttpContentAction.class);
@@ -53,13 +53,13 @@ public class HttpAction extends VariableAction {
         List<HttpHeaderAction> headerActions = new ArrayList<>();
         HttpContentAction contentAction = null;
         HttpResponseAction responseAction = null;
-        // 子节点执行
+        // process child nodes
         for (Action children : childrens) {
             if (children instanceof HttpHeaderAction) {
-                // 提取header节点
+                // extract header node
                 headerActions.add((HttpHeaderAction) children);
             } else if (children instanceof HttpContentAction) {
-                // 提取content节点
+                // extract content node
                 contentAction = (HttpContentAction) children;
                 contentAction.setEncoding(this.encoding);
             } else if (children instanceof HttpResponseAction) {
@@ -81,24 +81,24 @@ public class HttpAction extends VariableAction {
         String url = XUtils.toUrlString(actionParam.format(this.url), encoding);
         HttpURLConnection conn = null;
         try {
-            // 1. 创建URL对象
+            // 1. Create URL object
             URL realUrl = new URL(url);
             conn = (HttpURLConnection) realUrl.openConnection();
 
-            // 2. 基础配置
-            conn.setRequestMethod(method.toUpperCase()); // 请求方式POST
-            conn.setConnectTimeout(5000);  // 连接超时5秒
-            conn.setReadTimeout(5000);     // 读取超时5秒
-            conn.setDoOutput(true);        // 允许写入请求体
-            conn.setDoInput(true);         // 允许读取响应
+            // 2. Basic configuration
+            conn.setRequestMethod(method.toUpperCase()); // request method e.g. POST
+            conn.setConnectTimeout(5000);  // connection timeout: 5 seconds
+            conn.setReadTimeout(5000);     // read timeout: 5 seconds
+            conn.setDoOutput(true);        // allow writing request body
+            conn.setDoInput(true);         // allow reading response
 
 
-            // 3. 设置请求头信息
+            // 3. Set request headers
             for (HttpHeaderAction headerAction : headerActions) {
                 conn.setRequestProperty(headerAction.getName(), headerAction.getValue());
             }
 
-            // 4. 写入请求体（Body
+            // 4. Write request body
             if (!"GET".equalsIgnoreCase(method) && contentAction != null) {
                 if (conn.getRequestProperty("Content-Type") == null) {
                     conn.setRequestProperty("Content-Type", contentAction.getContentType());
@@ -112,7 +112,7 @@ public class HttpAction extends VariableAction {
             String responseMessage = conn.getResponseMessage();
             Map<String, List<String>> headerFields = conn.getHeaderFields();
             Long contentLength = XUtils.toLong(conn.getHeaderField("Content-Length"));
-            // 5. 读取响应结果
+            // 5. Read response
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             try (InputStream inputStream = responseCode >= 200 && responseCode < 400 ? conn.getInputStream() : conn.getErrorStream()) {

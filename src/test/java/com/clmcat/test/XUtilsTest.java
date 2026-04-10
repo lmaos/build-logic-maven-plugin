@@ -15,7 +15,7 @@ public class XUtilsTest {
 
     @Test
     void testRegex(){
-        // 测试正则表达式是否匹配
+        // test whether the regex matches
 
         String pattern = "*.txt";
 

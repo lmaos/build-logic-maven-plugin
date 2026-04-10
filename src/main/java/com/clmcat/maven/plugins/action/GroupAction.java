@@ -33,7 +33,7 @@ public interface GroupAction extends Action {
             callGroupExecute(actionParam, parentAction, actions);
         }
 
-        // 组执行
+        // Group execute
         protected void callGroupExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
             if (actions.isEmpty()) {
                 emptyChildrenExecute(actionParam, parentAction);
@@ -44,11 +44,12 @@ public interface GroupAction extends Action {
         }
 
         /**
-         * 当 Action 触发时为空时，默认执行操作：打印值。 方便查看 Action 实例的值
+         * Default action when no child actions are present: print the value.
+         * Useful for inspecting the value of an Action instance.
          *
-         * @param actionParam 全局参数
-         * @param parentAction 上层调用的 Action 实例
-         * @throws Exception 执行异常
+         * @param actionParam global action parameters
+         * @param parentAction the parent Action instance that invoked this action
+         * @throws Exception execution exception
          */
         protected void emptyChildrenExecute(ActionParam actionParam, Action parentAction) throws Exception {
             String value = getValue();

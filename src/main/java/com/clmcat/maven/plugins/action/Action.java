@@ -78,8 +78,7 @@ public interface Action {
         }
 
         /**
-           执行操作： 默认调用顺序: initExecute → triggerExecute
-
+         * Execute the action. Default call order: initExecute → triggerExecute
          */
         @Override
         public final void execute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -96,15 +95,15 @@ public interface Action {
         }
 
         /**
-         * !触发执行操作, 默认内部调用顺序： before → callExecute → after
-         * @param actionParam 全局参数
-         * @param parentAction 上层调用的 Action 实例
-         * @throws Exception 执行异常
+         * Trigger execution. Default internal call order: before → callExecute → after
+         * @param actionParam global action parameters
+         * @param parentAction the parent Action instance that invoked this action
+         * @throws Exception execution exception
          */
         protected void triggerExecute(ActionParam actionParam, Action parentAction) throws Exception {
-            beforeExecute(actionParam, parentAction); // 调用之前
+            beforeExecute(actionParam, parentAction); // called before execution
             callExecute(actionParam, parentAction);
-            afterExecute(actionParam, parentAction);  // 调用之后
+            afterExecute(actionParam, parentAction);  // called after execution
         }
 
         protected boolean initExecute(ActionParam actionParam, Action parentAction) throws Exception {
@@ -143,11 +142,11 @@ public interface Action {
         }
 
         /**
-         * 设置变量
-         * @param actionParam 全局参数
-         * @param scope 设置变量范围
-         * @param name  变量名，如果不存在，则不会设置。
-         * @param variable 变量值
+         * Set a variable in the specified scope.
+         * @param actionParam global action parameters
+         * @param scope variable scope (global, root, this, or default)
+         * @param name variable name; if empty, no variable will be set
+         * @param variable variable value
          */
         protected void setVariable(ActionParam actionParam, String scope, String name, Variable variable) {
             if (XUtils.isEmpty(name)) {
@@ -168,22 +167,22 @@ public interface Action {
         protected File getSafeDir(ActionParam actionParam) {
             Variable<File> var = actionParam.getVariable("allowWriteDir");
             if (var == null || !var.isExist() || var.getValue() == null) {
-                return null; // 没有白名单 → 禁止
+                return null; // no allowlist → deny
             }
             File allowDir = var.getValue();
             return allowDir;
         }
 
         protected boolean safeDir(ActionParam actionParam, File optFile) throws Exception {
-            // 空值直接拒绝
+            // null value is rejected immediately
             if (optFile == null) {
                 return false;
             }
 
-            // 获取真实路径（解决 ../ 穿透问题）
+            // Resolve the canonical path (prevents ../ path-traversal attacks)
             String canonicalPath = optFile.getCanonicalPath().toLowerCase();
 
-            // ====================== 1. 系统高危目录禁止操作 ======================
+            // ====================== 1. High-risk system directories are blocked ======================
             if (canonicalPath.equals("/")
                     || canonicalPath.matches("^[a-z]:\\\\?$")  // C:\ D:\
                     || canonicalPath.contains("windows")
@@ -195,16 +194,16 @@ public interface Action {
                 return false;
             }
 
-            // ====================== 2. 必须在白名单目录内 ======================
+            // ====================== 2. Path must be within the allowlisted directory ======================
             Variable<File> var = actionParam.getVariable("allowWriteDir");
             if (var == null || !var.isExist() || var.getValue() == null) {
-                return false; // 没有白名单 → 禁止
+                return false; // no allowlist → deny
             }
 
             File allowDir = var.getValue();
             String allowCanonicalPath = allowDir.getCanonicalPath().toLowerCase();
 
-            // 必须以白名单路径开头
+            // Path must start with the allowlisted directory
             return canonicalPath.startsWith(allowCanonicalPath);
         }
         protected void callFunction(String name,ActionParam actionParam, Action parentAction) throws Exception {
@@ -215,7 +214,7 @@ public interface Action {
             }
         }
 
-        // 解析子Action
+        // Parse child actions
         protected List<Action> parseChildren(ActionFactory actionFactory) throws Exception {
             List<Action>  children = new ArrayList<>();
             for (PlexusConfiguration child : plexusConfiguration.getChildren()) {

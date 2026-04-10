@@ -8,7 +8,7 @@ import com.clmcat.maven.plugins.action.factory.ActionFactory;
 import java.util.List;
 
 /**
- * 调用函数
+ * Invoke a function.
  */
 public  class CallAction extends CodeBlockAction.AbstractCodeBlockAction {
 

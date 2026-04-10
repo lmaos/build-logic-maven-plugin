@@ -23,10 +23,10 @@ import javax.inject.Inject;
 import java.io.File;
 
 /**
- * 自定义构建逻辑插件
- * 执行：mvn com.clmcat.maven.plugins:build-logic-maven-plugin:1.0.0:run
+ * Custom build logic plugin.
+ * Run: mvn com.clmcat.maven.plugins:build-logic-maven-plugin:1.0.0:run
  */
-@Mojo(name = "run") // 插件命令：run
+@Mojo(name = "run") // Plugin goal: run
 public class RunBuildLogicMojo extends AbstractMojo {
 
     @Parameter
@@ -47,11 +47,11 @@ public class RunBuildLogicMojo extends AbstractMojo {
 
     public RunBuildLogicMojo() {
         DefaultActionFactory actionFactory = new DefaultActionFactory();
-        actionFactory.addActionType("main", MainAction.class); // main 主函数
-        actionFactory.addActionType("echo", EchoAction.class); // 输出信息
-        actionFactory.addActionType("var", VariableAction.class); // 创建变量
-        actionFactory.addActionType("file", FileAction.class); // 文件变量
-        actionFactory.addActionType("write", WriteAction.class); // 写操作
+        actionFactory.addActionType("main", MainAction.class); // main entry point
+        actionFactory.addActionType("echo", EchoAction.class); // print output
+        actionFactory.addActionType("var", VariableAction.class); // create variable
+        actionFactory.addActionType("file", FileAction.class); // file variable
+        actionFactory.addActionType("write", WriteAction.class); // write operation
         actionFactory.addActionType("read", ReadAction.class);
         actionFactory.addActionType("mkdir", MkdirAction.class);
         actionFactory.addActionType("zip", ZipAction.class);
@@ -73,7 +73,7 @@ public class RunBuildLogicMojo extends AbstractMojo {
     }
 
 
-    // ====================== 执行逻辑 ======================
+    // ====================== Execution logic ======================
     @Override
     public void execute() throws MojoFailureException {
 
