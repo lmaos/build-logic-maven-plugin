@@ -167,7 +167,7 @@ public interface Action {
 
         protected File getSafeDir(ActionParam actionParam) {
             Variable<File> var = actionParam.getVariable("allowWriteDir");
-            if (var == null || !var.isExist() || var.getValue() == null) {
+            if (!Variable.isExist(var)) {
                 return null; // 没有白名单 → 禁止
             }
             File allowDir = var.getValue();
@@ -197,7 +197,7 @@ public interface Action {
 
             // ====================== 2. 必须在白名单目录内 ======================
             Variable<File> var = actionParam.getVariable("allowWriteDir");
-            if (var == null || !var.isExist() || var.getValue() == null) {
+            if (!Variable.isExist(var)) {
                 return false; // 没有白名单 → 禁止
             }
 

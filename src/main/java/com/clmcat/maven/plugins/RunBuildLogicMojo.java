@@ -4,6 +4,7 @@ import com.clmcat.maven.plugins.action.ActionExecute;
 import com.clmcat.maven.plugins.action.ActionParam;
 import com.clmcat.maven.plugins.action.compare.Compare;
 import com.clmcat.maven.plugins.action.compare.CompareFactory;
+import com.clmcat.maven.plugins.action.compare.ExpressionCalculatorCompare;
 import com.clmcat.maven.plugins.action.compare.LogicCompare;
 import com.clmcat.maven.plugins.action.execute.DefaultActionExecute;
 import com.clmcat.maven.plugins.action.factory.DefaultActionFactory;
@@ -85,7 +86,7 @@ public class RunBuildLogicMojo extends AbstractMojo {
         try {
 
             FunctionVariablesReference.execute(null,(functionVariable) -> {
-                Compare compare = new LogicCompare();
+                Compare compare = new ExpressionCalculatorCompare();
 
                 if (this.compare != null && this.compare.isEmpty() == false) {
                     compare = CompareFactory.newInstance(this.compare);

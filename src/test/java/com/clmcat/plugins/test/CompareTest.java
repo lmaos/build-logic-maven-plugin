@@ -1,4 +1,4 @@
-package com.clmcat.test;
+package com.clmcat.plugins.test;
 
 import com.clmcat.maven.plugins.action.compare.Compare;
 import com.clmcat.maven.plugins.action.compare.LogicCompare;

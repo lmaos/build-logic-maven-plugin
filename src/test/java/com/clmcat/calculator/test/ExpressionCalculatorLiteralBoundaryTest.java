@@ -1,0 +1,50 @@
+package com.clmcat.calculator.test;
+
+import com.clmcat.maven.plugins.calculator.ExpressionCalculator;
+import com.clmcat.maven.plugins.calculator.IterativeExpressionCalculator;
+import com.clmcat.maven.plugins.calculator.RecursiveExpressionCalculator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/**
+ * 字面量边界测试，确保引号、转义和引号内结构符号不会误伤解析。
+ */
+class ExpressionCalculatorLiteralBoundaryTest {
+
+    private Map<String, Object> variables;
+
+    static Stream<Arguments> calculators() {
+        return Stream.of(
+                Arguments.of("recursive", new RecursiveExpressionCalculator()),
+                Arguments.of("iterative", new IterativeExpressionCalculator()));
+    }
+
+    @BeforeEach
+    void setUp() {
+        variables = new HashMap<>();
+        variables.put("quotedOr", "a||b");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("calculators")
+    void shouldRejectBrokenStringAndCharacterLiterals(String name, ExpressionCalculator calculator) {
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculation("\"unterminated", variables));
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculation("'ab'", variables));
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculation("'\\x'", variables));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("calculators")
+    void shouldIgnoreQuotedBooleanOperatorsDuringBoundaryParsing(String name, ExpressionCalculator calculator) {
+        assertTrue(calculator.compareCalculation("\"a||b\" == quotedOr || missing == 1", variables));
+    }
+}

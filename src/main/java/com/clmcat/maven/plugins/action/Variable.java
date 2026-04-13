@@ -52,7 +52,7 @@ public interface Variable<T> extends Comparable<Variable<T>> {
         @Override
         public int compareTo(Variable<T> o) {
             // 1. 对方为空 → 自己大，排后面
-            if (o == null || !o.isExist() || o.getValue() == null) {
+            if (!Variable.isExist(o)) {
                 return 1;
             }
             // 2. 自己为空 → 自己小，排前面

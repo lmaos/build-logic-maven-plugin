@@ -38,7 +38,7 @@ public class FieldElement implements EvaluateNode {
 
         Variable variable = nodeParam.getVariable(_field);
         // 验证变量是否存在。不存在， 验证是否是 boolean 类型，不是则直接返回false。
-        if (variable == null || !variable.isExist()) {
+        if (!Variable.isExist(variable)) {
             // 去掉引号
             if (_field.startsWith("\"") && _field.endsWith("\"")
                     || _field.startsWith("'") && _field.endsWith("'")) {

@@ -63,13 +63,7 @@
         <!-- JUnit 5 单元测试 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.14.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>5.14.3</version>
             <scope>test</scope>
         </dependency>
@@ -151,6 +145,12 @@
 <!--                    </execution>-->
 <!--                </executions>-->
 <!--            </plugin>-->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
         </plugins>
     </build>
 

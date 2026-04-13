@@ -69,7 +69,7 @@ public class WriteAction extends Action.AbstractAction {
                     }
                 } else if (refVariable instanceof BytesVariable) {
 
-                    if (!refVariable.isExist()) {
+                    if (!Variable.isExist(refVariable)) {
                         throw new MojoExecutionException("<write ref = " + ref + " >, BytesVariable not exist");
                     }
 
@@ -78,7 +78,7 @@ public class WriteAction extends Action.AbstractAction {
                         fos.flush();
                     }
                 } else {
-                    if (!refVariable.isExist()) {
+                    if (!Variable.isExist(refVariable)) {
                         throw new MojoExecutionException("<write ref = " + ref + " >, not exist");
                     }
                     try (FileOutputStream fos = new FileOutputStream(writeFile, append)) {

@@ -62,7 +62,7 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
         }
 
         Variable<List<ZipEntryAction.ZipEntry>> fileVariable = getFunctionVariables().getVariable(ZipEntryAction.VAR_NAME);
-        if (fileVariable == null || !fileVariable.isExist()) {
+        if (!Variable.isExist(fileVariable)) {
             actionParam.info("No files to zip");
             return;
         }
@@ -155,7 +155,7 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
 
             Variable<List<ZipEntry>> variable = getFunctionVariables().getVariable(VAR_NAME);
 
-            if (!variable.isExist()) {
+            if (!Variable.isExist(variable)) {
                 variable = new ListVariable<>();
                 getFunctionVariables().setVariable(VAR_NAME, variable);
             }

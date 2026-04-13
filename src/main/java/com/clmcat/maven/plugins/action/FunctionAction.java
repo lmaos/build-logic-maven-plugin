@@ -79,7 +79,7 @@ public interface FunctionAction extends GroupAction {
 
             // 如果不进行自动执行，将函数添加到变量中
             if (!isAutoExecute()) {
-                if (actionParam.getVariable("function:" + name).isExist()) {
+                if (Variable.isExist(actionParam.getVariable("function:" + name))) {
                     throw new MojoExecutionException("Function name " + name + " is already defined");
                 }
                 actionParam.setVariable("function:" + name, FunctionActionVariable.of(this));

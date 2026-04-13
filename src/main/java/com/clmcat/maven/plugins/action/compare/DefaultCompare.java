@@ -27,7 +27,7 @@ public class DefaultCompare implements Compare{
 
             boolean result =  false;
 
-            if (variable.isExist()) { // 如果变量存在
+            if (Variable.isExist(variable)) { // 如果变量存在
 
                 if (variable.getValue() instanceof Boolean) {
                     result = (Boolean) variable.getValue();

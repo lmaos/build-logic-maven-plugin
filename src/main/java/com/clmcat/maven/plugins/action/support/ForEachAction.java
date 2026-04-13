@@ -25,7 +25,7 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
 
         FunctionVariable thisFunctionVariable = getThisFunctionVariable();
 
-        if (variable.isExist()) {
+        if (Variable.isExist(variable)) {
             if (variable.getValue() instanceof Collection) {
                 Collection<?> colls = (Collection<?>) variable.getValue();
                 int index = 0;
