@@ -102,7 +102,7 @@ nohup java ${JAVA_OPTS} -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${
         <plugin>
             <groupId>com.clmcat.maven.plugins</groupId>
             <artifactId>build-logic-maven-plugin</artifactId>
-            <version>---插件版本---</version>
+            <version>1.0.0</version>
             <executions>
                 <execution>
                     <id>build-script</id>
@@ -127,15 +127,51 @@ nohup java ${JAVA_OPTS} -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${
 
 ```
 
+## 快速上手
+
+最小可运行示例：
+
+```xml
+<main>
+    <var name="message" value="'hello world'" />
+    <echo>${message}</echo>
+</main>
+```
+
+常用写法：
+
+- `<var>` / `<var.int>` / `<var.string>`：定义变量
+- `<echo>`：输出日志
+- `<read>` / `<write>`：读写文件
+- `<if>` / `<foreach>` / `<func>` / `<call>`：条件、循环和函数
+- `<list.add>`、`<str.substr>` 这类带点号的标签表示同一个 action 的不同方法变体
+
+使用时记住两点：
+
+- 所有可执行逻辑都放进 `<main>`
+- 写文件默认受 `allowWriteDir` 限制，通常是 `${project.basedir}`
+
 ## 开发与测试
 
 ```bash
 mvn test
+```
+
+如果只想跑新增的 action 层单元测试，可以执行：
+
+```bash
+mvn -Dtest=ActionXUtilsTest,DefaultActionFactoryTest,VariableActionTest,FunctionVariablesReferenceTest test
 mvn -Dtest=RunBuildLogicMojoUsageTest test
 mvn -Dtest=RunBuildLogicMojoBoundaryTest test
 mvn -Dtest=RunBuildLogicMojoRegressionTest test
 mvn -Dtest=RunBuildLogicMojoTest#testHttpMojoExecute test
 ```
+
+`src/test/java/com/clmcat/maven/plugins/action` 下的单元测试主要覆盖：
+
+- 基础工具方法与字符串处理
+- factory 的标签绑定与属性校验
+- 变量类型推断和作用域栈
 
 插件层测试统一放在 `com.clmcat.plugins.test`，当前按三层组织：
 
@@ -706,7 +742,7 @@ name: 设置指定变量的字符串值。
     <echo>${response}</echo>
     <echo>${response.code}</echo>
     <echo>${response.message}</echo>
-    <echo>${response.headers.getHeader(String "Content-Type")}</echo>
+    <echo>${response.headers.getHeader("Content-Type")}</echo>
 </response>
 </http>
 ```
