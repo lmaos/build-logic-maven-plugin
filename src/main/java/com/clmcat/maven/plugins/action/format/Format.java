@@ -5,13 +5,12 @@ import com.clmcat.maven.plugins.action.XUtils;
 import com.clmcat.maven.plugins.action.variable.FunctionVariables;
 import com.clmcat.maven.plugins.action.variable.VariableFactory;
 import com.clmcat.maven.plugins.action.variable.map.VarOnlyReadMap;
-import com.clmcat.maven.plugins.calculator.DefaultExpressionFormat;
-import com.clmcat.maven.plugins.calculator.ExpressionFormat;
-import com.clmcat.maven.plugins.calculator.IterativeExpressionCalculator;
+import com.clmcat.maven.plugins.calculator.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class Format {
@@ -25,7 +24,31 @@ public class Format {
         around = around == null ? "${?}"  : around;
 
         VarOnlyReadMap varOnlyReadMap = new VarOnlyReadMap(param);
-        return formatter.format(text, around, varOnlyReadMap);
+        OutputFormatRegistry registry = OutputFormatRegistry.getInstance().copy();
+        registry.setFormatCallback((value, context) -> {
+            if (context.expressionKind() != OutputExpressionKind.REFERENCE) {
+                return null;
+            }
+            if (value == null) {
+                return null;
+            }
+
+            Variable variable = param.getVariable(context.expression());
+
+            if (!Variable.isExist(variable)) {
+                return null;
+            }
+
+            Object variableValue = variable.getValue();
+            // 变量引用一定是相当的，才是变量里的数据，否则不属于变量中的数据。 获取变量时候从 param读取，所以变量引用的地址一定相同。
+            if (variableValue == null || value != variableValue) {
+                return null;
+            }
+
+            return variable.getStringValue();
+
+        });
+        return formatter.format(text, around, varOnlyReadMap, registry);
 
 //        String[] split = around.split("\\?");
 //

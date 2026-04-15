@@ -3,6 +3,9 @@ package com.clmcat.plugins.test;
 import com.clmcat.maven.plugins.action.XUtils;
 import org.junit.jupiter.api.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class XUtilsTest {
 
     @Test
@@ -20,5 +23,6 @@ public class XUtilsTest {
         String pattern = "*.txt";
 
         System.out.println("asd.1txt".matches(pattern.replace(".","\\.").replace("*",".*")));
+
     }
 }

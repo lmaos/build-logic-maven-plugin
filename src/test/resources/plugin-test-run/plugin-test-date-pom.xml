@@ -7,7 +7,7 @@
                 <version>1.0-SNAPSHOT</version>
                 <configuration>
                     <main>
-                        <date name="date" />
+                        <date name="date" format="yyyyMMddHHmmss"/>
                         <echo>${date}</echo>
                     </main>
                 </configuration>
