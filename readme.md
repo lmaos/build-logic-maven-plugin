@@ -96,6 +96,19 @@ nohup java ${JAVA_OPTS} -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${
 
 ## Maven 插件使用方法
 
+## 中央仓库依赖
+
+已发布到 Maven Central，可直接引用：
+
+```xml
+<dependency>
+    <groupId>com.clmcat.maven.plugins</groupId>
+    <artifactId>build-logic-maven-plugin</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
+```
+
 ```xml
     <build>
     <plugins>
