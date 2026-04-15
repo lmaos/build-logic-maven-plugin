@@ -1,5 +1,12 @@
 package com.clmcat.calculator.test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import com.clmcat.maven.plugins.calculator.ExpressionCalculator;
 import com.clmcat.maven.plugins.calculator.IterativeExpressionCalculator;
 import com.clmcat.maven.plugins.calculator.RecursiveExpressionCalculator;
@@ -7,13 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * 字面量边界测试，确保引号、转义和引号内结构符号不会误伤解析。
@@ -38,7 +38,7 @@ class ExpressionCalculatorLiteralBoundaryTest {
     @MethodSource("calculators")
     void shouldRejectBrokenStringAndCharacterLiterals(String name, ExpressionCalculator calculator) {
         assertThrows(IllegalArgumentException.class, () -> calculator.calculation("\"unterminated", variables));
-        assertThrows(IllegalArgumentException.class, () -> calculator.calculation("'ab'", variables));
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculation("'ab", variables));
         assertThrows(IllegalArgumentException.class, () -> calculator.calculation("'\\x'", variables));
     }
 

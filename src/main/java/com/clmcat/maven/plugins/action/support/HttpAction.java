@@ -28,7 +28,7 @@ import java.util.Map;
  }
  * </pre>
  */
-public class HttpAction extends VariableAction {
+public class HttpAction extends VariableAction implements DeferredChildrenParsingAction {
 
     private String method = "GET";
     private String encoding = "UTF-8";
@@ -40,11 +40,14 @@ public class HttpAction extends VariableAction {
 
     @Override
     protected void callExecute(ActionParam actionParam, Action parentAction) throws Exception {
-        String encoding = this.encoding;
-        String method = this.method;
-        HttpResponse httpResponse = null;
-        // 执行http请求
-        ActionFactory actionFactory = actionParam.getActionFactory().create();
+        String encoding = XUtils.isEmpty(this.encoding) ? "UTF-8" : this.encoding.trim();
+        String method = XUtils.isEmpty(this.method) ? "GET" : this.method.trim().toUpperCase();
+        String url = actionParam.format(this.url);
+        if (XUtils.isEmpty(url)) {
+            throw new IllegalArgumentException("<http> url is required");
+        }
+
+        ActionFactory actionFactory = actionParam.getActionFactory().copy();
         actionFactory.addActionType("header", HttpHeaderAction.class);
         actionFactory.addActionType("content", HttpContentAction.class);
         actionFactory.addActionType("response", HttpResponseAction.class);
@@ -56,94 +59,109 @@ public class HttpAction extends VariableAction {
         // 子节点执行
         for (Action children : childrens) {
             if (children instanceof HttpHeaderAction) {
-                // 提取header节点
                 headerActions.add((HttpHeaderAction) children);
             } else if (children instanceof HttpContentAction) {
-                // 提取content节点
+                if (contentAction != null) {
+                    throw new IllegalArgumentException("<http> only supports one <content> child");
+                }
                 contentAction = (HttpContentAction) children;
-                contentAction.setEncoding(this.encoding);
+                contentAction.setEncoding(encoding);
             } else if (children instanceof HttpResponseAction) {
+                if (responseAction != null) {
+                    throw new IllegalArgumentException("<http> only supports one <response> child");
+                }
                 responseAction = (HttpResponseAction) children;
+            } else {
+                throw new IllegalArgumentException("<http> only supports <header>, <content> and <response> children");
             }
         }
         for (HttpHeaderAction headerAction : headerActions) {
-            headerAction.execute(actionParam, parentAction);
-            if (headerAction.getName().equals("content-type")) {
-                contentAction.setContentType(headerAction.getValue());
-            } else if (headerAction.getName().equals("encoding")) {
+            headerAction.execute(actionParam, this);
+            if ("content-type".equalsIgnoreCase(headerAction.getName())) {
+                if (contentAction != null) {
+                    contentAction.setContentType(headerAction.getValue());
+                }
+            } else if ("encoding".equalsIgnoreCase(headerAction.getName())) {
                 encoding = headerAction.getValue();
-                contentAction.setEncoding(encoding);
+                if (contentAction != null) {
+                    contentAction.setEncoding(encoding);
+                }
             }
         }
         if (contentAction != null) {
-            contentAction.execute(actionParam, parentAction);
+            contentAction.setEncoding(encoding);
+            contentAction.execute(actionParam, this);
         }
-        String url = XUtils.toUrlString(actionParam.format(this.url), encoding);
+        url = XUtils.toUrlString(url, encoding);
+
         HttpURLConnection conn = null;
+        HttpResponse httpResponse;
         try {
-            // 1. 创建URL对象
             URL realUrl = new URL(url);
             conn = (HttpURLConnection) realUrl.openConnection();
+            conn.setRequestMethod(method);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setDoInput(true);
+            conn.setDoOutput(!"GET".equalsIgnoreCase(method) && contentAction != null);
 
-            // 2. 基础配置
-            conn.setRequestMethod(method.toUpperCase()); // 请求方式POST
-            conn.setConnectTimeout(5000);  // 连接超时5秒
-            conn.setReadTimeout(5000);     // 读取超时5秒
-            conn.setDoOutput(true);        // 允许写入请求体
-            conn.setDoInput(true);         // 允许读取响应
-
-
-            // 3. 设置请求头信息
             for (HttpHeaderAction headerAction : headerActions) {
                 conn.setRequestProperty(headerAction.getName(), headerAction.getValue());
             }
-
-            // 4. 写入请求体（Body
             if (!"GET".equalsIgnoreCase(method) && contentAction != null) {
                 if (conn.getRequestProperty("Content-Type") == null) {
                     conn.setRequestProperty("Content-Type", contentAction.getContentType());
                 }
                 byte[] contentBytes = contentAction.getContentBytes();
                 conn.setRequestProperty("Content-Length", String.valueOf(contentBytes.length));
-                conn.getOutputStream().write(contentBytes);
+                try (OutputStream outputStream = conn.getOutputStream()) {
+                    outputStream.write(contentBytes);
+                    outputStream.flush();
+                }
             }
 
             int responseCode = conn.getResponseCode();
             String responseMessage = conn.getResponseMessage();
             Map<String, List<String>> headerFields = conn.getHeaderFields();
             Long contentLength = XUtils.toLong(conn.getHeaderField("Content-Length"));
-            // 5. 读取响应结果
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-            try (InputStream inputStream = responseCode >= 200 && responseCode < 400 ? conn.getInputStream() : conn.getErrorStream()) {
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
-                    if (contentLength != null && out.size() == contentLength) {
-                        break;
+            InputStream rawInputStream = responseCode >= 200 && responseCode < 400 ? conn.getInputStream() : conn.getErrorStream();
+            if (rawInputStream != null) {
+                try (InputStream inputStream = rawInputStream) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                        if (contentLength != null && out.size() == contentLength) {
+                            break;
+                        }
                     }
                 }
             }
-
             byte[] responseContentBytes = out.toByteArray();
-            httpResponse = new HttpResponse(responseCode, responseMessage, headerFields, responseContentBytes, encoding);
+            httpResponse = new HttpResponse(responseCode, responseMessage, new HttpHeaders(headerFields), responseContentBytes, encoding);
         } finally {
             if (conn != null) {
                 conn.disconnect();
             }
         }
 
-        String name = getName();
-        setVariable(actionParam, new HttpResponseVeriable(httpResponse));
-        setVariable(actionParam, "this", name+ ".code", NumberVariable.of(httpResponse.responseCode));
-        setVariable(actionParam, "this", name + ".message", StringVariable.ofNotNull(httpResponse.responseMessage));
-        setVariable(actionParam, "this", name + ".content", BytesVariable.of(httpResponse.responseContentBytes));
-        setVariable(actionParam, "this", name + ".headers", MapVariable.of(new HttpHeaders(httpResponse.headerFields)));
+        storeResponseVariables(actionParam, getName(), httpResponse);
         if (responseAction != null) {
             responseAction.setHttpResponse(httpResponse);
-            responseAction.execute(actionParam, parentAction);
+            responseAction.execute(actionParam, this);
         }
+    }
+
+    private void storeResponseVariables(ActionParam actionParam, String name, HttpResponse httpResponse) {
+        if (XUtils.isEmpty(name)) {
+            return;
+        }
+        super.setVariable(actionParam, null, name, new HttpResponseVeriable(httpResponse));
+        super.setVariable(actionParam, "this", name + ".code", NumberVariable.of(httpResponse.code));
+        super.setVariable(actionParam, "this", name + ".message", StringVariable.ofNotNull(httpResponse.message));
+        super.setVariable(actionParam, "this", name + ".content", BytesVariable.of(httpResponse.responseContentBytes));
+        super.setVariable(actionParam, "this", name + ".headers", MapVariable.of(httpResponse.headers));
     }
 
     public static class HttpResponseAction extends CodeBlockAction.AbstractCodeBlockAction {
@@ -155,13 +173,12 @@ public class HttpAction extends VariableAction {
 
         @Override
         protected void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
-
-
-            setVariable(actionParam, "this", to, new HttpResponseVeriable(httpResponse));
-            setVariable(actionParam, "this", to + ".code", NumberVariable.of(httpResponse.responseCode));
-            setVariable(actionParam, "this", to + ".message", StringVariable.ofNotNull(httpResponse.responseMessage));
-            setVariable(actionParam, "this", to + ".content", BytesVariable.of(httpResponse.responseContentBytes));
-            setVariable(actionParam, "this", to + ".headers", MapVariable.of(new HttpHeaders(httpResponse.headerFields)));
+            String responseName = XUtils.isEmpty(to) ? "response" : to;
+            setVariable(actionParam, "this", responseName, new HttpResponseVeriable(httpResponse));
+            setVariable(actionParam, "this", responseName + ".code", NumberVariable.of(httpResponse.code));
+            setVariable(actionParam, "this", responseName + ".message", StringVariable.ofNotNull(httpResponse.message));
+            setVariable(actionParam, "this", responseName + ".content", BytesVariable.of(httpResponse.responseContentBytes));
+            setVariable(actionParam, "this", responseName + ".headers", MapVariable.of(httpResponse.headers));
             actions = parseChildren(actionParam.getActionFactory().copy());
             super.callCodeBlockExecute(actionParam, parentAction, actions);
         }
@@ -178,22 +195,37 @@ public class HttpAction extends VariableAction {
 
         public String getHeader(String name) {
             List<String> strings = get(name);
-            return strings == null || strings.isEmpty() ? null : strings.get(0);
+            if (strings != null && !strings.isEmpty()) {
+                return strings.get(0);
+            }
+            for (Map.Entry<String, List<String>> entry : entrySet()) {
+                if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(name)) {
+                    List<String> values = entry.getValue();
+                    return values == null || values.isEmpty() ? null : values.get(0);
+                }
+            }
+            return null;
         }
     }
 
     public static class HttpResponse {
-        private int responseCode;
-        private String responseMessage;
-        private Map<String, List<String>> headerFields;
-        private byte[] responseContentBytes;
-        private String encoding;
-        public HttpResponse(int responseCode, String responseMessage, Map<String, List<String>> headerFields, byte[] responseContentBytes, String encoding) {
-            this.responseCode = responseCode;
-            this.responseMessage = responseMessage;
-            this.headerFields = headerFields;
+        public final int code;
+        public final String message;
+        public final HttpHeaders headers;
+        public final byte[] responseContentBytes;
+        public final String encoding;
+        private final String content;
+        public HttpResponse(int code, String message, HttpHeaders headers, byte[] responseContentBytes, String encoding) {
+            this.code = code;
+            this.message = message;
+            this.headers = headers;
             this.responseContentBytes = responseContentBytes;
             this.encoding = encoding;
+            if (responseContentBytes != null) {
+                this.content = new String(responseContentBytes, Charset.forName(encoding));
+            } else  {
+                this.content = null;
+            }
         }
 
         public byte[] contentBytes() {
@@ -201,24 +233,22 @@ public class HttpAction extends VariableAction {
         }
 
         public int code() {
-            return responseCode;
+            return code;
         }
 
         public Map<String, List<String>> headers() {
-            return headerFields;
+            return headers;
         }
 
         public String message() {
-            return responseMessage;
+            return message;
         }
 
         public String content() {
-            if (responseContentBytes != null) {
-                return new String(responseContentBytes, Charset.forName(encoding));
-            } else  {
-                return null;
-            }
+            return this.content;
         }
+
+
 
         @Override
         public String toString() {
@@ -238,7 +268,9 @@ public class HttpAction extends VariableAction {
 
         @Override
         protected void callExecute(ActionParam actionParam, Action action) throws Exception {
-
+            if (XUtils.isEmpty(name)) {
+                throw new IllegalArgumentException("<header> name is required");
+            }
         }
 
         @Override
@@ -285,39 +317,41 @@ public class HttpAction extends VariableAction {
         protected void callExecute(ActionParam actionParam, Action action) throws Exception {
             if (!XUtils.isEmpty(ref)) {
                 Variable variable = getVariable(ref);
-                if (Variable.isExist(variable)) {
-                    if (variable instanceof ListVariable || variable instanceof MapVariable) {
-                        if (contentType.contains("application/json") || contentType.contains("text/plain")) {
-                            this.contentBytes = XUtils.toJsonString(variable.getValue()).getBytes(Charset.forName(encoding));
-                        } else if (contentType.contains("application/x-www-form-urlencoded") && variable instanceof MapVariable) {
-                            Map<?, ?> map = (Map<?, ?>) variable.getValue();
-                            StringBuffer sb = new StringBuffer();
-                            map.forEach((k, v) -> {
-                                try {
-                                    sb.append(k).append("=").append(URLEncoder.encode(v.toString(), encoding)).append("&");
-                                } catch (UnsupportedEncodingException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-                            this.contentBytes = sb.toString().getBytes(Charset.forName(encoding));
-                        } else {
-                            throw new IllegalArgumentException("List or Map Content-Type must be application/json or text/plain");
+                if (!Variable.isExist(variable)) {
+                    throw new IllegalArgumentException("<content ref=\"" + ref + "\"> variable does not exist");
+                }
+                if (variable instanceof ListVariable || variable instanceof MapVariable) {
+                    if (contentType.contains("application/json") || contentType.contains("text/plain")) {
+                        this.contentBytes = XUtils.toJsonString(variable.getValue()).getBytes(Charset.forName(encoding));
+                    } else if (contentType.contains("application/x-www-form-urlencoded") && variable instanceof MapVariable) {
+                        Map<?, ?> map = (Map<?, ?>) variable.getValue();
+                        StringBuilder sb = new StringBuilder();
+                        for (Map.Entry<?, ?> entry : map.entrySet()) {
+                            if (sb.length() > 0) {
+                                sb.append("&");
+                            }
+                            sb.append(entry.getKey()).append("=")
+                                    .append(URLEncoder.encode(String.valueOf(entry.getValue()), encoding));
                         }
-                    } else if (variable instanceof BytesVariable) {
-                        this.contentBytes = ((BytesVariable) variable).getValue();
-                    }else if (variable instanceof FileVariable) {
-                        File file = ((FileVariable) variable).getValue();
-                        if (file.exists()) {
-                            this.contentBytes = XUtils.readFileToBytes(file);
-                        } else {
-                            throw new IllegalArgumentException("<content ref=\""+ref+"\"> File not exists: " + file);
-                        }
+                        this.contentBytes = sb.toString().getBytes(Charset.forName(encoding));
                     } else {
-                        this.contentBytes = XUtils.toBytes(variable.getStringValue(), encoding);
+                        throw new IllegalArgumentException("List or Map Content-Type must be application/json, text/plain or x-www-form-urlencoded");
                     }
+                } else if (variable instanceof BytesVariable) {
+                    this.contentBytes = ((BytesVariable) variable).getValue();
+                } else if (variable instanceof FileVariable) {
+                    File file = ((FileVariable) variable).getValue();
+                    if (file.exists()) {
+                        this.contentBytes = XUtils.readFileToBytes(file);
+                    } else {
+                        throw new IllegalArgumentException("<content ref=\""+ref+"\"> File not exists: " + file);
+                    }
+                } else {
+                    this.contentBytes = XUtils.toBytes(variable.getStringValue(), encoding);
                 }
             } else {
-                this.contentBytes = XUtils.toBytes(getValue().trim(), encoding);
+                String value = getValue();
+                this.contentBytes = XUtils.toBytes(value == null ? null : value.trim(), encoding);
             }
         }
 

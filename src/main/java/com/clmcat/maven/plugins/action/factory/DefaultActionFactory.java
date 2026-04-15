@@ -1,11 +1,13 @@
 package com.clmcat.maven.plugins.action.factory;
 
 import com.clmcat.maven.plugins.action.Action;
+import com.clmcat.maven.plugins.action.DeferredChildrenParsingAction;
 import com.clmcat.maven.plugins.action.GroupAction;
 import com.clmcat.maven.plugins.action.anns.NotAttr;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 
-import javax.management.monitor.MonitorSettingException;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Date;
@@ -22,10 +24,13 @@ public class DefaultActionFactory implements ActionFactory {
     }
 
     @Override
-    public <T extends Action> T newInstance(PlexusConfiguration config) {
+    public <T extends Action> T newInstance(PlexusConfiguration config) throws MojoExecutionException {
+        if (config == null) {
+            throw new MojoExecutionException("Action configuration is null");
+        }
         Class<?> aClass = actionTypeMap.get(getTagName(config.getName()).toLowerCase());
         if (aClass == null) {
-            return  null;
+            throw new MojoExecutionException("Unknown action tag: <" + config.getName() + ">");
         }
         return newInstance(config, aClass);
     }
@@ -50,11 +55,11 @@ public class DefaultActionFactory implements ActionFactory {
         return create;
     }
 
-    public <T extends Action> T newInstance(PlexusConfiguration config , Class<?> actionClass) {
+    public <T extends Action> T newInstance(PlexusConfiguration config , Class<?> actionClass) throws MojoExecutionException {
 
         try {
             String name = config.getName();
-            T t = (T)actionClass.newInstance();
+            T t = (T) actionClass.getDeclaredConstructor().newInstance();
             String value = config.getValue();
             t.setValue(value);
             t.setTag(name);
@@ -68,14 +73,12 @@ public class DefaultActionFactory implements ActionFactory {
             }
 
             ///  组 Action
-            if (t instanceof GroupAction) {
+            if (t instanceof GroupAction && !(t instanceof DeferredChildrenParsingAction)) {
                 PlexusConfiguration[] children = config.getChildren();
                 if (children != null && children.length > 0) {
                     for (PlexusConfiguration childConfig : children) {
-                        T t1 = (T) newInstance(childConfig);
-                        if (t1 != null) {
-                            ((GroupAction) t).addAction(t1);
-                        }
+                        Action childAction = newInstance(childConfig);
+                        ((GroupAction) t).addAction(childAction);
                     }
                 }
             }
@@ -83,37 +86,43 @@ public class DefaultActionFactory implements ActionFactory {
             String[] attributeNames = config.getAttributeNames();
             if (attributeNames != null && attributeNames.length > 0) {
                 for (String attributeName : attributeNames) {
-                    try {
-                        Field declaredField = findField(attributeName, actionClass);
-                        // 忽略 NotAttr 注解的字段
-                        if (declaredField.isAnnotationPresent(NotAttr.class)) {
-                            continue;
-                        }
-
-
-                        int modifiers = declaredField.getModifiers();
-                        // 忽略 static 或 final 字段
-                        if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
-                            continue;
-                        }
-
-                        declaredField.setAccessible(true);
-                        String attribute = config.getAttribute(attributeName);
-                        Object object = parseValue(attribute, declaredField.getType());
-                        declaredField.set(t, object);
-                    } catch (NoSuchFieldException e) {
-                        // 无这个字段
-                        throw new MonitorSettingException("Tag:" + name + ", attr:" + attributeName + " not found");
-                    }
+                    bindAttribute(t, actionClass, name, config, attributeName);
                 }
             }
 
             return t;
+        } catch (MojoExecutionException exception) {
+            throw exception;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            String tagName = config == null ? "<unknown>" : config.getName();
+            throw new MojoExecutionException("Failed to create action for tag: <" + tagName + ">", e);
         }
 
-    };
+    }
+
+    private void bindAttribute(Action action, Class<?> actionClass, String tagName,
+                               PlexusConfiguration config, String attributeName) throws Exception {
+        Field declaredField;
+        try {
+            declaredField = findField(attributeName, actionClass);
+        } catch (NoSuchFieldException exception) {
+            throw new MojoExecutionException("Unknown attribute '" + attributeName + "' on tag <" + tagName + ">", exception);
+        }
+
+        if (declaredField.isAnnotationPresent(NotAttr.class)) {
+            return;
+        }
+
+        int modifiers = declaredField.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
+            return;
+        }
+
+        declaredField.setAccessible(true);
+        String attribute = config.getAttribute(attributeName);
+        Object object = parseValue(attribute, declaredField.getType(), tagName, attributeName);
+        declaredField.set(action, object);
+    }
 
     public Field findField(String fieldName, Class<?> fieldType) throws NoSuchFieldException {
         Class<?> aClass = fieldType;
@@ -128,40 +137,52 @@ public class DefaultActionFactory implements ActionFactory {
         throw new NoSuchFieldException("Field:" + fieldName + " not found");
     }
 
-    protected Object parseValue(String value, Class<?> aClass) {
+    protected Object parseValue(String value, Class<?> aClass, String tagName, String attributeName) throws MojoExecutionException {
         if (value == null || value.length() == 0) {
             return null;
         }
-        if (aClass.equals(String.class)) {
-            return value;
+        try {
+            if (aClass.equals(String.class)) {
+                return value;
+            }
+            if (aClass.equals(Integer.class) || aClass.equals(int.class)) {
+                return Integer.parseInt(value);
+            }
+            if (aClass.equals(Long.class) || aClass.equals(long.class)) {
+                return Long.parseLong(value);
+            }
+            if (aClass.equals(Double.class) || aClass.equals(double.class)) {
+                return Double.parseDouble(value);
+            }
+            if (aClass.equals(Boolean.class) || aClass.equals(boolean.class)) {
+                return Boolean.parseBoolean(value);
+            }
+            if (aClass.equals(Float.class) || aClass.equals(float.class)) {
+                return Float.parseFloat(value);
+            }
+            if (aClass.equals(Character.class) || aClass.equals(char.class)) {
+                if (value.length() != 1) {
+                    throw new IllegalArgumentException("expected a single character");
+                }
+                return value.charAt(0);
+            }
+            if (aClass.equals(Byte.class) || aClass.equals(byte.class)) {
+                return Byte.parseByte(value);
+            }
+            if (aClass.equals(Short.class) || aClass.equals(short.class)) {
+                return Short.parseShort(value);
+            }
+            if (Date.class.isAssignableFrom(aClass)) {
+                return new Date(Long.parseLong(value));
+            }
+            if (File.class.isAssignableFrom(aClass)) {
+                return new File(value);
+            }
+        } catch (Exception exception) {
+            throw new MojoExecutionException("Failed to parse attribute '" + attributeName + "' on tag <" + tagName
+                    + "> as " + aClass.getSimpleName() + ": " + value, exception);
         }
-        if (aClass.equals(Integer.class) || aClass.equals(int.class)) {
-            return Integer.parseInt(value);
-        }
-        if (aClass.equals(Long.class) || aClass.equals(long.class)) {
-            return Long.parseLong(value);
-        }
-        if (aClass.equals(Double.class) || aClass.equals(double.class)) {
-            return Double.parseDouble(value);
-        }
-        if (aClass.equals(Boolean.class) || aClass.equals(boolean.class)) {
-            return Boolean.parseBoolean(value);
-        }
-        if (aClass.equals(Float.class) || aClass.equals(float.class)) {
-            return Float.parseFloat(value);
-        }
-        if (aClass.equals(Character.class) || aClass.equals(char.class)) {
-            return value.charAt(0);
-        }
-        if (aClass.equals(Byte.class) || aClass.equals(byte.class)) {
-            return Byte.parseByte(value);
-        }
-        if (aClass.equals(Short.class) || aClass.equals(short.class)) {
-            return Short.parseShort(value);
-        }
-        if (Date.class.isAssignableFrom(aClass)) {
-            return new Date(Long.parseLong(value));
-        }
-        return null;
+        throw new MojoExecutionException("Unsupported attribute type " + aClass.getName() + " on tag <" + tagName
+                + "> for attribute '" + attributeName + "'");
     }
 }

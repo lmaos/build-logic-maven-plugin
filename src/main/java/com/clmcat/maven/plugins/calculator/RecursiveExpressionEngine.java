@@ -44,6 +44,7 @@ final class RecursiveExpressionEngine {
         private final String text;
         private final Map<String, Object> variables;
         private final OperatorRegistry operatorRegistry = OperatorRegistry.getInstance();
+        private final ConverterRegistry converterRegistry = ConverterRegistry.getInstance();
         private int position;
 
         private Parser(String text, Map<String, Object> variables) {
@@ -114,6 +115,11 @@ final class RecursiveExpressionEngine {
 
         private Node parsePrefixExpression() {
             skipWhitespace();
+            Operator castOperator = readCastOperator();
+            if (castOperator != null) {
+                Node operand = parseValueExpression(castOperator.precedence());
+                return new UnaryNode(castOperator, operand);
+            }
             Operator operator = operatorRegistry.matchUnaryOperator(text, position);
             if (operator != null) {
                 position += operator.symbol().length();
@@ -142,7 +148,7 @@ final class RecursiveExpressionEngine {
             } else if (current == '"') {
                 node = new LiteralNode(parseStringLiteral());
             } else if (current == '\'') {
-                node = new LiteralNode(parseCharacterLiteral());
+                node = new LiteralNode(parseSingleQuotedLiteral());
             } else if (Character.isDigit(current) || current == '.') {
                 node = new LiteralNode(parseNumberLiteral());
             } else if (ExpressionTextSupport.isIdentifierStart(current)) {
@@ -165,26 +171,37 @@ final class RecursiveExpressionEngine {
         private Node parsePostfix(Node node) {
             while (true) {
                 skipWhitespace();
-                if (!match('.')) {
-                    return node;
-                }
-                String methodName = parseIdentifier();
-                skipWhitespace();
-                if (!match('(')) {
-                    throw new IllegalArgumentException("非法字符: .");
-                }
-                List<Node> arguments = new ArrayList<>();
-                skipWhitespace();
-                if (!match(')')) {
-                    do {
-                        arguments.add(parseExpression());
+                if (match('.')) {
+                    String memberName = parseIdentifier();
+                    skipWhitespace();
+                    if (match('(')) {
+                        List<Node> arguments = new ArrayList<>();
                         skipWhitespace();
-                    } while (match(','));
-                    if (!match(')')) {
-                        throw new IllegalArgumentException("括号不匹配");
+                        if (!match(')')) {
+                            do {
+                                arguments.add(parseExpression());
+                                skipWhitespace();
+                            } while (match(','));
+                            if (!match(')')) {
+                                throw new IllegalArgumentException("括号不匹配");
+                            }
+                        }
+                        node = new MethodCallNode(node, memberName, arguments);
+                    } else {
+                        node = new FieldAccessNode(node, memberName, variables);
                     }
+                    continue;
                 }
-                node = new MethodCallNode(node, methodName, arguments);
+                if (match('[')) {
+                    Node indexNode = parseExpression();
+                    skipWhitespace();
+                    if (!match(']')) {
+                        throw new IllegalArgumentException("方括号不匹配");
+                    }
+                    node = new BinaryOperatorNode(node, indexOperator(), indexNode);
+                    continue;
+                }
+                return node;
             }
         }
 
@@ -200,8 +217,8 @@ final class RecursiveExpressionEngine {
             return token.value();
         }
 
-        private Character parseCharacterLiteral() {
-            ExpressionTextSupport.ParsedToken<Character> token = ExpressionTextSupport.parseCharacterLiteral(text, position);
+        private Object parseSingleQuotedLiteral() {
+            ExpressionTextSupport.ParsedToken<Object> token = ExpressionTextSupport.parseSingleQuotedLiteral(text, position);
             position = token.nextIndex();
             return token.value();
         }
@@ -211,6 +228,16 @@ final class RecursiveExpressionEngine {
             ExpressionTextSupport.ParsedToken<String> token = ExpressionTextSupport.parseIdentifier(text, position);
             position = token.nextIndex();
             return token.value();
+        }
+
+        private Operator readCastOperator() {
+            ExpressionTextSupport.ParsedToken<String> token =
+                    ExpressionTextSupport.parseCastType(text, position, converterRegistry);
+            if (token == null) {
+                return null;
+            }
+            position = token.nextIndex();
+            return CastOperator.create(token.value());
         }
 
         private boolean match(String expected) {
@@ -242,9 +269,20 @@ final class RecursiveExpressionEngine {
         private char currentChar() {
             return text.charAt(position);
         }
+
+        private Operator indexOperator() {
+            return operatorRegistry.getBinaryOperator(IndexOperator.SYMBOL);
+        }
     }
 
     // ----- AST 节点定义 -----
+    private static RuntimeValue resolveVariableValue(String name, Map<String, Object> variables) {
+        if (variables == null || !variables.containsKey(name)) {
+            return RuntimeValue.missingVariable(name);
+        }
+        return RuntimeValue.variable(variables.get(name));
+    }
+
     private static final class LiteralNode implements Node {
         private final Object value;
 
@@ -269,10 +307,7 @@ final class RecursiveExpressionEngine {
 
         @Override
         public RuntimeValue evaluate() {
-            if (variables == null || !variables.containsKey(name)) {
-                return RuntimeValue.missingVariable(name);
-            }
-            return RuntimeValue.variable(variables.get(name));
+            return resolveVariableValue(name, variables);
         }
     }
 
@@ -354,6 +389,27 @@ final class RecursiveExpressionEngine {
                 evaluatedArguments.add(argument.evaluate());
             }
             return ExpressionRuntimeSupport.invokeMethod(receiverValue, methodName, evaluatedArguments);
+        }
+    }
+
+    private static final class FieldAccessNode implements Node {
+        private final Node receiver;
+        private final String fieldName;
+        private final Map<String, Object> variables;
+
+        private FieldAccessNode(Node receiver, String fieldName, Map<String, Object> variables) {
+            this.receiver = receiver;
+            this.fieldName = fieldName;
+            this.variables = variables;
+        }
+
+        @Override
+        public RuntimeValue evaluate() {
+            RuntimeValue receiverValue = receiver.evaluate();
+            if (receiverValue.isMissingVariable()) {
+                return resolveVariableValue(receiverValue.missingVariableName() + "." + fieldName, variables);
+            }
+            return ExpressionRuntimeSupport.accessField(receiverValue, fieldName);
         }
     }
 }

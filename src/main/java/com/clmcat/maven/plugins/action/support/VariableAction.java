@@ -68,14 +68,17 @@ public class VariableAction extends Action.AbstractAction {
 
 
         if (ref != null && !(ref = ref.trim()).isEmpty()) {
-            Variable refVariable = actionParam.getVariable(ref);
+            Variable refVariable = getVariable(ref);
             if (Variable.isNULL(refVariable)) {
                 throw new MojoExecutionException("Variable ref must exist: <var ref=\"" + ref + "\" />");
             }
             setVariable(actionParam, refVariable);
         } else {
-
-            String value = actionParam.format(getValue());
+            String value = getValue();
+            if (value == null) {
+                throw new MojoExecutionException("Variable action requires value or ref: <" + getTag()
+                        + " name=\"" + name + "\" />");
+            }
 
             Variable variable = null;
 

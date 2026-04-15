@@ -3,6 +3,7 @@ package com.clmcat.maven.plugins.action.support;
 import com.clmcat.maven.plugins.action.Action;
 import com.clmcat.maven.plugins.action.ActionParam;
 import com.clmcat.maven.plugins.action.CodeBlockAction;
+import com.clmcat.maven.plugins.action.DeferredChildrenParsingAction;
 import com.clmcat.maven.plugins.action.factory.ActionFactory;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 /**
  * 调用函数
  */
-public  class CallAction extends CodeBlockAction.AbstractCodeBlockAction {
+public  class CallAction extends CodeBlockAction.AbstractCodeBlockAction implements DeferredChildrenParsingAction {
 
     @Override
     public void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {

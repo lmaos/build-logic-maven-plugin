@@ -1,0 +1,44 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <file name="inputFile" path="${project.basedir}/input.txt" />
+                        <file name="outputFile" path="${project.basedir}/usage-output.txt" />
+
+                        <read name="inputBytes" file="inputFile" />
+                        <var name="trimmedInput" ref="inputBytes" />
+                        <str.trim name="trimmedInput" />
+
+                        <list name="items">
+                            <item>${trimmedInput}</item>
+                            <item>done</item>
+                        </list>
+
+                        <func.buildLine>
+                            <str.toUpperCase name="trimmedInput" to="upperInput" />
+                            <return ref="upperInput" />
+                        </func.buildLine>
+
+                        <call.buildLine />
+
+                        <write file="outputFile" overwrite="true" value="${return.buildLine}|${items.size()}" />
+                        <foreach collection="items" item="item">
+                            <write file="outputFile" append="true" value="|${item}" />
+                        </foreach>
+
+                        <if test="items">
+                            <then>
+                                <write file="outputFile" append="true" value="|OK" />
+                            </then>
+                        </if>
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

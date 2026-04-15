@@ -6,6 +6,7 @@ import com.clmcat.maven.plugins.action.CodeBlockAction;
 import com.clmcat.maven.plugins.action.Variable;
 import com.clmcat.maven.plugins.action.variable.*;
 import com.clmcat.maven.plugins.action.variable.number.NumberVariable;
+import org.apache.maven.plugin.MojoExecutionException;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -21,7 +22,11 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
     private String item = "item";
     @Override
     public void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
-        Variable variable = getFunctionVariables().getVariable(collection);
+        String collectionName = actionParam.format(collection);
+        if (collectionName == null || collectionName.trim().isEmpty()) {
+            throw new MojoExecutionException("<foreach> collection attribute is required");
+        }
+        Variable variable = getFunctionVariables().getVariable(collectionName);
 
         FunctionVariable thisFunctionVariable = getThisFunctionVariable();
 
@@ -31,17 +36,19 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
                 int index = 0;
                 for (Object coll : colls) {
                     Variable itemVariable = VariableFactory.newVariable(coll);
-                    getFunctionVariables().getFirst().setVariable(this.item, itemVariable);
+                    thisFunctionVariable.setVariable(this.item, itemVariable);
                     thisFunctionVariable.setVariable(this.item+".index", NumberVariable.of(index++));
                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                 }
             } else if (variable instanceof MapVariable) {
                 Map<?, ?> map = ((MapVariable)variable).getValue();
+                int index = 0;
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
                     Variable itemVariable = VariableFactory.newVariable(entry.getKey());
                     Variable valueVariable = VariableFactory.newVariable(entry.getValue());
                     thisFunctionVariable.setVariable(this.item+".key", itemVariable);
                     thisFunctionVariable.setVariable(this.item+".value", valueVariable);
+                    thisFunctionVariable.setVariable(this.item+".index", NumberVariable.of(index++));
                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                 }
             } else if (variable.getValue().getClass().isArray()) {
@@ -58,7 +65,8 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
                 FileVariable fileVariable = (FileVariable)variable;
                 File file = fileVariable.getValue();
                 if (file.isFile()) {
-                    getFunctionVariables().getFirst().setVariable(this.item, fileVariable);
+                    thisFunctionVariable.setVariable(this.item, fileVariable);
+                    thisFunctionVariable.setVariable(this.item+".index", NumberVariable.of(0));
                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                 } else {
                     // 是目录的情况
@@ -74,7 +82,7 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
                         if (files != null) {
                             for (File subFile : files) {
                                 if (subFile.isFile()) {
-                                    getFunctionVariables().getFirst().setVariable(this.item, FileVariable.of(subFile));
+                                    thisFunctionVariable.setVariable(this.item, FileVariable.of(subFile));
                                     thisFunctionVariable.setVariable(this.item+".index", NumberVariable.of(index++));
                                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                                 } else {
@@ -84,19 +92,24 @@ public class ForEachAction extends CodeBlockAction.AbstractCodeBlockAction {
                         }
                     }
                 }
+            } else {
+                throw new MojoExecutionException("<foreach collection=\"" + collectionName
+                        + "\"> only supports Collection, Map, array, File or numeric range");
             }
         } else {
             // 1..2
-            this.collection = actionParam.format(collection);
-            int i = collection.indexOf("..");
+            int i = collectionName.indexOf("..");
             if (i != -1) {
-                int index = Integer.parseInt(collection.substring(0, i));
-                int end = Integer.parseInt(collection.substring(i+2));
+                int index = Integer.parseInt(collectionName.substring(0, i).trim());
+                int end = Integer.parseInt(collectionName.substring(i+2).trim());
                 for (int j = index; j <= end; j++) {
                     Variable itemVariable = VariableFactory.newVariable(j);
-                    getFunctionVariables().getFirst().setVariable(this.item, itemVariable);
+                    thisFunctionVariable.setVariable(this.item, itemVariable);
+                    thisFunctionVariable.setVariable(this.item+".index", NumberVariable.of(j - index));
                     super.callCodeBlockExecute(actionParam, parentAction, actions);
                 }
+            } else {
+                throw new MojoExecutionException("Unknown foreach collection: " + collectionName);
             }
         }
     }

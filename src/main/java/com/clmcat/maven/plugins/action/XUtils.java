@@ -41,7 +41,8 @@ public class XUtils {
         try {
             return simpleDateFormat.parse(date);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException("Failed to parse date '" + date + "' with format '" + format
+                    + "' and timeZone '" + timeZone + "'", e);
         }
     }
 
@@ -58,10 +59,24 @@ public class XUtils {
     }
 
     public static String unquote(String str) {
+        if (str == null) {
+            return null;
+        }
         if (str.startsWith("\"") && str.endsWith("\"") || str.startsWith("'") && str.endsWith("'")) {
             return str.substring(1, str.length() - 1);
         }
         return str;
+    }
+
+    public static String[] splitArguments(String text) {
+        if (isEmpty(text)) {
+            return new String[0];
+        }
+        String[] split = text.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)");
+        for (int i = 0; i < split.length; i++) {
+            split[i] = split[i].trim();
+        }
+        return split;
     }
 
     public static <T> java.util.Set<T> toSet(T ... items){
@@ -141,8 +156,6 @@ public class XUtils {
                     sb.append(',');
                 }
             }
-            sb.deleteCharAt(sb.length() - 1);
-
             if (sb.length() > 1) {
                 sb.deleteCharAt(sb.length() - 1);
             }
@@ -186,7 +199,8 @@ public class XUtils {
                                 sb.append(',');
                             }
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            throw new IllegalStateException("Failed to serialize getter '" + m.getName() + "' from "
+                                    + object.getClass().getName(), e);
                         }
                     }
                 }
@@ -209,7 +223,7 @@ public class XUtils {
             }
             return bos.toString(encoding);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to read file: " + file, e);
         }
     }
 
@@ -223,7 +237,7 @@ public class XUtils {
             }
             return bos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to read file bytes: " + file, e);
         }
     }
 
@@ -252,7 +266,7 @@ public class XUtils {
                     try {
                         sb.append(param.substring(0, i)).append("=").append(URLEncoder.encode(param.substring(i + 1), encoding)).append("&");
                     } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
+                        throw new IllegalArgumentException("Unsupported URL encoding: " + encoding, e);
                     }
                 }
             }

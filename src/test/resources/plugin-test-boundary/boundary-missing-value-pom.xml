@@ -1,0 +1,16 @@
+<project>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.clmcat.maven.plugins</groupId>
+                <artifactId>build-logic-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                    <main>
+                        <var name="broken" />
+                    </main>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

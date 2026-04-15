@@ -26,7 +26,7 @@
                         <str name="str">hello world</str>
                         <echo>${str.length()}</echo> <!-- 输出：11 -->
                         <echo>${str.toUpperCase()}</echo> <!-- 输出：HELLO WORLD -->
-                        <echo>${str.substring(int 0, int 5)}</echo> <!-- 输出：HELLO -->
+                        <echo>${str.substring(0, 5)}</echo> <!-- 输出：HELLO -->
 
                         <file name="file" path="${project.basedir}/test.txt"/>
                         <echo>${file.getName()}</echo> <!-- 输出：true -->

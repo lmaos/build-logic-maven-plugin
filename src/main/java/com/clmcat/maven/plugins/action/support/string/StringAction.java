@@ -69,12 +69,9 @@ public class StringAction extends Action.AbstractAction {
     public  static  interface StringMethod {
         // 解析参数
         default String[] paserParams(String _params){
-            String[] params = null;
-            if (XUtils.isNotEmpty(_params)) {
-                params = _params.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)");
-                for (int i = 0; i < params.length; i++) {
-                    params[i] = XUtils.unquote(params[i].trim());
-                }
+            String[] params = XUtils.splitArguments(_params);
+            for (int i = 0; i < params.length; i++) {
+                params[i] = XUtils.unquote(params[i]);
             }
             return params;
         }
@@ -93,8 +90,8 @@ public class StringAction extends Action.AbstractAction {
         methods.put("len", new LengthStringMethod());
         methods.put("replace", new ReplaceStringMethod());
         methods.put("trim", new TrimStringMethod());
-        methods.put("toLowerCase", new ToLowerCaseStringMethod());
-        methods.put("toUpperCase", new ToUpperCaseStringMethod());
+        methods.put("tolowercase", new ToLowerCaseStringMethod());
+        methods.put("touppercase", new ToUpperCaseStringMethod());
         methods.put("set", new SetStringMethod());
         methods.put("split", new SplitStringMethod());
         methods.put("json", new ToJsonStringMethod());

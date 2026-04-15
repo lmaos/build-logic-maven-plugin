@@ -127,6 +127,52 @@ nohup java ${JAVA_OPTS} -jar "${SCRIPT_DIR}/${APP_NAME}.jar" > "${SCRIPT_DIR}/${
 
 ```
 
+## 开发与测试
+
+```bash
+mvn test
+mvn -Dtest=RunBuildLogicMojoUsageTest test
+mvn -Dtest=RunBuildLogicMojoBoundaryTest test
+mvn -Dtest=RunBuildLogicMojoRegressionTest test
+mvn -Dtest=RunBuildLogicMojoTest#testHttpMojoExecute test
+```
+
+插件层测试统一放在 `com.clmcat.plugins.test`，当前按三层组织：
+
+- **使用方式测试**：验证 README 中常见 DSL 组合是否可直接执行
+- **边界测试**：验证配置错误、空值、越界文件写入、未知集合等失败路径
+- **最终回归测试**：验证方法调用解析、HTTP 响应变量、函数/作用域组合等历史易错点
+
+## 执行模型与扩展方式
+
+运行入口是 `com.clmcat.maven.plugins.RunBuildLogicMojo`，它会把 `<main>` 作为 DSL 根节点，并注册当前支持的顶级标签。执行模型可以理解成：
+
+1. XML 标签先映射成 `Action`
+2. `Action` 在当前变量作用域内执行
+3. 代码块或函数会压入新的作用域
+4. 子标签由当前 `Action` 自己决定如何解析和执行
+
+需要扩展 DSL 时，优先沿用现有两种模式：
+
+- **点号标签扩展**：`<var.int>`、`<list.add>`、`<str.substr>`、`<base64.encode>`，点号后半段会作为 `tagMethod`
+- **结构化子标签扩展**：`<if><then/></if>`、`<call><arg/></call>`、`<http><header/><content/><response/></http>`、`<zip><entry/></zip>`
+
+函数和代码块的变量作用域遵循当前实现：
+
+- `<main>` 是根作用域
+- `<func.xxx>` 定义函数，`<call.xxx>` 在调用时创建新的函数作用域
+- `<if>`、`<foreach>`、`<http><response>` 这类代码块会创建自己的局部作用域
+- `return.xxx` 会写回调用方作用域
+
+## 约束与错误处理
+
+- 所有可执行逻辑都必须放在 `<main>` 中；函数只能定义在根级或 `<main>` 下
+- 未注册的标签、未知属性、类型不匹配的属性值现在都会直接失败，而不是静默忽略
+- `<var>` 在没有 `ref` 时必须提供值；变量名只允许字母、数字、下划线和 `$`
+- `foreach` 只支持 `Collection`、`Map`、数组、`File`（文件或目录）和 `0..9` 这种区间表达式
+- 写文件、建目录、删除、生成 zip 都受 `allowWriteDir` 限制；默认安全目录是 `${project.basedir}`
+- `${...}` 不只是字符串替换，还支持 Java 方法调用，例如 `${str.substring(int 0, int 5)}`
+
 ## 扩展 ${} 表达式
 
  变量：逻辑创建的变量。

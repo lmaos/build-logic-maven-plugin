@@ -166,46 +166,11 @@ public interface Action {
         }
 
         protected File getSafeDir(ActionParam actionParam) {
-            Variable<File> var = actionParam.getVariable("allowWriteDir");
-            if (!Variable.isExist(var)) {
-                return null; // 没有白名单 → 禁止
-            }
-            File allowDir = var.getValue();
-            return allowDir;
+            return ActionFileSupport.getAllowedWriteDir(actionParam);
         }
 
         protected boolean safeDir(ActionParam actionParam, File optFile) throws Exception {
-            // 空值直接拒绝
-            if (optFile == null) {
-                return false;
-            }
-
-            // 获取真实路径（解决 ../ 穿透问题）
-            String canonicalPath = optFile.getCanonicalPath().toLowerCase();
-
-            // ====================== 1. 系统高危目录禁止操作 ======================
-            if (canonicalPath.equals("/")
-                    || canonicalPath.matches("^[a-z]:\\\\?$")  // C:\ D:\
-                    || canonicalPath.contains("windows")
-                    || canonicalPath.contains("system32")
-                    || canonicalPath.contains("/bin")
-                    || canonicalPath.contains("/sbin")
-                    || canonicalPath.contains("/usr")
-                    || canonicalPath.contains("/etc")) {
-                return false;
-            }
-
-            // ====================== 2. 必须在白名单目录内 ======================
-            Variable<File> var = actionParam.getVariable("allowWriteDir");
-            if (!Variable.isExist(var)) {
-                return false; // 没有白名单 → 禁止
-            }
-
-            File allowDir = var.getValue();
-            String allowCanonicalPath = allowDir.getCanonicalPath().toLowerCase();
-
-            // 必须以白名单路径开头
-            return canonicalPath.startsWith(allowCanonicalPath);
+            return ActionFileSupport.isSafeWriteTarget(actionParam, optFile);
         }
         protected void callFunction(String name,ActionParam actionParam, Action parentAction) throws Exception {
             Variable variable = actionParam.getVariable("function:" + name);

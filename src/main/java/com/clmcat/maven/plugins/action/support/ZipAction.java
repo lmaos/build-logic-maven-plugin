@@ -31,7 +31,7 @@ import java.util.zip.ZipOutputStream;
  *
  *
  */
-public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
+public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction implements DeferredChildrenParsingAction {
 
     private String file;
 
@@ -39,27 +39,17 @@ public class ZipAction extends CodeBlockAction.AbstractCodeBlockAction {
     protected void callCodeBlockExecute(ActionParam actionParam, Action parentAction, List<Action> actions) throws Exception {
         ActionFactory actionFactory = actionParam.getActionExecute().getActionFactory().create();
         actionFactory.addActionType("entry", ZipEntryAction.class);
+        getThisFunctionVariable().setVariable(ZipEntryAction.VAR_NAME, new ListVariable<ZipEntryAction.ZipEntry>());
         actions = parseChildren(actionFactory);
         super.callCodeBlockExecute(actionParam, parentAction, actions);
     }
 
     @Override
     protected void afterExecute(ActionParam actionParam, Action parentAction) throws Exception {
-
-        this.file = actionParam.format(file);
-
-        actionParam.info("<zip> zip.file: " + file);
-
-        File zipFile = null;
-        Variable variable = getFunctionVariables().getVariable(this.file);
-        if (variable instanceof FileVariable) {
-            zipFile = ((FileVariable) variable).getValue();
-        } else {
-            zipFile =  new File(file);
-        }
-        if (zipFile.getParentFile() == null || !zipFile.getParentFile().exists()) {
-            throw new MojoExecutionException("Directory does not exist, file: " + this.file);
-        }
+        File zipFile = ActionFileSupport.resolveFile(this, actionParam, file, "file", true);
+        ActionFileSupport.requireSafeWriteTarget(this, actionParam, zipFile);
+        ActionFileSupport.ensureParentDirectoryExists(zipFile, "Zip target");
+        actionParam.info("<zip> zip.file: " + zipFile);
 
         Variable<List<ZipEntryAction.ZipEntry>> fileVariable = getFunctionVariables().getVariable(ZipEntryAction.VAR_NAME);
         if (!Variable.isExist(fileVariable)) {

@@ -53,7 +53,11 @@ public class RunBuildLogicMojoTest  {
     @Basedir("src/test/resources/plugin-test-run")
     @InjectMojo(goal = "run", pom = "plugin-test-http-pom.xml")
     public void testHttpMojoExecute(RunBuildLogicMojo mojo)  {
-        Assertions.assertDoesNotThrow(() -> mojo.execute());
+        Assertions.assertDoesNotThrow(() -> {
+            try (LocalHttpTestServer ignored = LocalHttpTestServer.start()) {
+                mojo.execute();
+            }
+        });
     }
     @Test
     @Basedir("src/test/resources/plugin-test-run")

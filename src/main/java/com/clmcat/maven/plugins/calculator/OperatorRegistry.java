@@ -1,10 +1,6 @@
 package com.clmcat.maven.plugins.calculator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -16,6 +12,7 @@ import java.util.function.Function;
  */
 public final class OperatorRegistry {
 
+    private static final int PRECEDENCE_PRIMARY = 11;
     // 优先级从低到高依次为：等号、位或、位异或、位与、关系、移位、加减、乘除、幂、一元。
     private static final int PRECEDENCE_EQUALITY = 1;
     private static final int PRECEDENCE_BITWISE_OR = 2;
@@ -51,7 +48,7 @@ public final class OperatorRegistry {
     }
 
     public synchronized Operator registerBinary(String symbol, int precedence, Associativity associativity,
-                                                BiFunction<RuntimeValue, RuntimeValue, RuntimeValue> function) {
+            BiFunction<RuntimeValue, RuntimeValue, RuntimeValue> function) {
         validateBinarySymbol(symbol);
         Operator operator = Operator.binary(symbol, precedence, associativity, function);
         binaryOperators.put(symbol, operator);
@@ -60,7 +57,7 @@ public final class OperatorRegistry {
     }
 
     public synchronized Operator registerUnary(String symbol, int precedence, Associativity associativity,
-                                               Function<RuntimeValue, RuntimeValue> function) {
+            Function<RuntimeValue, RuntimeValue> function) {
         Operator operator = Operator.unary(symbol, precedence, associativity, function);
         unaryOperators.put(symbol, operator);
         refreshUnarySnapshot();
@@ -87,12 +84,24 @@ public final class OperatorRegistry {
         return unaryOperatorSnapshot;
     }
 
+    static int primaryPrecedence() {
+        return PRECEDENCE_PRIMARY;
+    }
+
+    static int unaryPrecedence() {
+        return PRECEDENCE_UNARY;
+    }
+
     Operator matchBinaryOperator(String text, int start) {
         return match(binaryOperatorSnapshot, text, start);
     }
 
     Operator matchUnaryOperator(String text, int start) {
         return match(unaryOperatorSnapshot, text, start);
+    }
+
+    Operator getBinaryOperator(String symbol) {
+        return binaryOperators.get(symbol);
     }
 
     public synchronized void resetToDefaults() {
@@ -111,6 +120,7 @@ public final class OperatorRegistry {
         registerBinaryInternal("*", PRECEDENCE_MULTIPLICATIVE, Associativity.LEFT, ExpressionRuntimeSupport::multiply);
         registerBinaryInternal("/", PRECEDENCE_MULTIPLICATIVE, Associativity.LEFT, ExpressionRuntimeSupport::divide);
         registerBinaryInternal("%", PRECEDENCE_MULTIPLICATIVE, Associativity.LEFT, ExpressionRuntimeSupport::remainder);
+        registerBinaryInternal(IndexOperator.SYMBOL, PRECEDENCE_PRIMARY, Associativity.LEFT, IndexOperator::apply);
         registerBinaryInternal("+", PRECEDENCE_ADDITIVE, Associativity.LEFT, ExpressionRuntimeSupport::add);
         registerBinaryInternal("-", PRECEDENCE_ADDITIVE, Associativity.LEFT, ExpressionRuntimeSupport::subtract);
         registerBinaryInternal("**", PRECEDENCE_POWER, Associativity.RIGHT, ExpressionRuntimeSupport::power);
@@ -134,12 +144,12 @@ public final class OperatorRegistry {
     }
 
     private void registerBinaryInternal(String symbol, int precedence, Associativity associativity,
-                                        BiFunction<RuntimeValue, RuntimeValue, RuntimeValue> function) {
+            BiFunction<RuntimeValue, RuntimeValue, RuntimeValue> function) {
         binaryOperators.put(symbol, Operator.binary(symbol, precedence, associativity, function));
     }
 
     private void registerUnaryInternal(String symbol, int precedence, Associativity associativity,
-                                       Function<RuntimeValue, RuntimeValue> function) {
+            Function<RuntimeValue, RuntimeValue> function) {
         unaryOperators.put(symbol, Operator.unary(symbol, precedence, associativity, function));
     }
 
